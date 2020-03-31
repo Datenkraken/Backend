@@ -1,0 +1,38 @@
+"A datetime string with format `Y-m-d H:i:s`, e.g. `2018-01-01 13:00:00`."
+scalar DateTime @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\DateTime")
+
+"A date string with format `Y-m-d`, e.g. `2011-05-23`."
+scalar Date @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\Date")
+
+"""
+A type to match a date to a value.
+"""
+type DateValue {
+  date: Date
+  value: Int
+}
+
+"""
+A container to encapsule the user counts.
+"""
+type UserCounts {
+  added: [DateValue]
+  deleted: [DateValue]
+  all: [DateValue]
+}
+
+type Mutation
+
+type Query {
+  """
+  Query to get the user count for a given time period, ordered by date
+  """
+  userCount(startDate: Date, endDate: Date): UserCounts
+}
+
+#import AppEvent.graphql
+#import ArticleEvent.graphql
+#import Category.graphql
+#import RssSource.graphql
+#import SourceEvent.graphql
+#import WifiData.graphql

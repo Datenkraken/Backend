@@ -1,0 +1,55 @@
+version: "3.1"
+
+services:
+
+    db:
+        image: mongo
+        restart: unless-stopped
+        environment:
+          - MONGO_INITDB_ROOT_USERNAME=root
+          - MONGO_INITDB_ROOT_PASSWORD=root
+        networks:
+            - default
+        volumes:
+            - db:/var/lib/mysql
+
+    redis:
+        image: redis:alpine
+        restart: unless-stopped
+        networks:
+            - default
+
+    web:
+        build: .
+        restart: unless-stopped
+        depends_on:
+            - "db"
+            - "redis"
+        labels:
+            - "traefik.enable=true"
+            - "traefik.docker.network=proxy"
+            - "traefik.http.services.datenkraken.loadbalancer.server.port=80"
+            - "traefik.http.routers.datenkraken.rule=Host(`REPLACE_WITH_YOUR_DOMAIN`)"
+            - "traefik.http.routers.datenkraken.entrypoints=web-secure"
+            - "traefik.http.routers.datenkraken.middlewares=compress-gzip@file,securityheaders@file"
+            - "traefik.http.routers.datenkraken.tls=true"
+            - "traefik.http.routers.datenkraken.tls.certresolver=tlsletsencrypt"
+            - "traefik.http.routers.datenkraken-http.rule=Host(`REPLACE_WITH_YOUR_DOMAIN`)"
+            - "traefik.http.routers.datenkraken-http.entrypoints=web"
+            - "traefik.http.routers.datenkraken-http.middlewares=httpsredirect@file"
+        networks:
+            - default
+            - proxy
+        volumes:
+            - .env:/var/www/html/env/.env
+            - storage:/var/www/html/webapp/storage
+
+networks:
+    default:
+        driver: bridge
+    proxy:
+        external: true
+
+volumes:
+    db:
+    storage:

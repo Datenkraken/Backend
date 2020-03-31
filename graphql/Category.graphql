@@ -1,0 +1,21 @@
+"""A category"""
+type Category {
+  """The id of the category"""
+  id: String!
+
+  """The name of the category"""
+  name: String
+
+  """The description of the category"""
+  description: String
+
+  """The associated rss sources"""
+  rssSources: [RssSource]
+}
+
+extend type Query {
+  """
+  Query for categories.
+  """
+  categories(id: String @where(operator: "=")): [Category] @all
+}

@@ -1,0 +1,44 @@
+"""Types of events that are app related"""
+enum AppEventType {
+  """Event that is dispached when the main scroll view is opened"""
+  SCROLL @enum(value: "scroll")
+  """Event that is dispached when the app is put in the background"""
+  BACKGROUND @enum(value: "background")
+  """Event that is dispached when the app is started"""
+  STARTED @enum(value: "started")
+  """Event that is dispached when the app is closed"""
+  CLOSED @enum(value: "closed")
+}
+
+"""Event that includes several kinds of events that are app related"""
+type AppEvent {
+  """The timestamp of the dataset"""
+  timestamp: DateTime!,
+
+  """Type of the app event"""
+  type: AppEventType!,
+}
+
+"""Event that includes several kinds of events that are app related"""
+input createAppEvent {
+  """The timestamp of the dataset"""
+  timestamp: DateTime!,
+
+  """Type of the app event"""
+  type: AppEventType!,
+}
+
+
+extend type Mutation {
+  """
+  A mutation to submit new source events a user has generated
+  """
+  submitAppEvent(input: [createAppEvent]): [AppEvent] @createWithCurrentUser
+}
+
+extend type Query {
+  """
+  A query to get the count of all app open events for a given time period
+  """
+  appOpened(startDate: Date, endDate: Date): [DateValue]
+}

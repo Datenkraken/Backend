@@ -1,0 +1,199 @@
+stages:
+  - preparation
+  - building
+  - testing
+  - security
+
+image: edbizarro/gitlab-ci-pipeline-php:7.3
+
+variables:
+  SAST_EXCLUDED_PATHS: "node_modules, vendor"
+  SAST_DISABLE_DIND: "true"
+  SAST_DEFAULT_ANALYZERS: "phpcs-security-audit,eslint"
+  DOCKER_HOST: tcp://localhost:2375
+  DOCKER_TLS_CERTDIR: ""
+
+.only-default: &only-default
+  only:
+    - master
+    - merge_requests
+
+include:
+  - template: SAST.gitlab-ci.yml
+  - template: License-Management.gitlab-ci.yml
+  - template: Code-Quality.gitlab-ci.yml
+  - template: Dependency-Scanning.gitlab-ci.yml
+  - template: Container-Scanning.gitlab-ci.yml
+
+cache:
+  key: "$CI_JOB_NAME-$CI_COMMIT_REF_SLUG"
+
+composer:
+  stage: preparation
+  <<: *only-default
+  script:
+    - php -v
+    - composer install --prefer-dist --no-ansi --no-interaction --no-progress --no-scripts
+    - cp .env.ci .env
+    - php artisan key:generate
+  artifacts:
+    paths:
+      - vendor/
+      - .env
+    expire_in: 1 days
+    when: always
+  cache:
+    paths:
+      - vendor/
+
+npm:
+  stage: preparation
+  <<: *only-default
+  script:
+    - npm --version
+    - npm install
+  artifacts:
+    paths:
+      - node_modules/
+    expire_in: 1 days
+    when: always
+  cache:
+    paths:
+      - node_modules/
+
+build-container:
+  image: docker:19.03.1
+  stage: building
+  <<: *only-default
+  dependencies: []
+  services:
+    - docker:19.03.1-dind
+  variables:
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $IMAGE_TAG .
+    - docker push $IMAGE_TAG
+
+build-assets:
+  stage: building
+  <<: *only-default
+  # Download the artifacts for these jobs
+  dependencies:
+    - composer
+    - npm
+  script:
+    - npm --version
+    - npm run production
+  artifacts:
+    paths:
+      - public/
+    expire_in: 1 days
+    when: always
+
+db-seeding:
+  stage: building
+  <<: *only-default
+  services:
+    - name: mongo:4.2
+  # Download the artifacts for these jobs
+  dependencies:
+    - composer
+    - npm
+  script:
+    - php artisan config:clear
+    - php artisan migrate:fresh --seed
+    - php artisan passport:install
+    - mongodump --forceTableScan --host="localhost" --db="datenkraken" --archive > db.archive
+  artifacts:
+    paths:
+      - storage/logs # for debugging
+      - db.archive
+      - storage/oauth-private.key
+      - storage/oauth-public.key
+    expire_in: 1 days
+    when: always
+
+phpunit:
+  stage: testing
+  <<: *only-default
+  services:
+    - name: mongo:4.2
+  # Download the artifacts for these jobs
+  dependencies:
+    - build-assets
+    - composer
+    - db-seeding
+  script:
+    - php -v
+    - mongorestore --host="localhost" --db="datenkraken" --archive="db.archive"
+    - php artisan config:clear
+    - php ./vendor/phpunit/phpunit/phpunit --coverage-text --colors=never --log-junit="report.xml"
+  artifacts:
+    reports:
+      junit: report.xml
+    paths:
+      - ./storage/logs # for debugging
+    expire_in: 1 days
+    when: on_failure
+
+phpcpd:
+  stage: testing
+  <<: *only-default
+  script:
+    - test -f phpcpd.phar || curl -L https://phar.phpunit.de/phpcpd.phar -o phpcpd.phar
+    - php phpcpd.phar app/ --min-lines=50
+  dependencies: []
+  cache:
+    paths:
+      - phpcpd.phar
+
+sensiolabs:
+  stage: security
+  <<: *only-default
+  script:
+    - test -d security-checker || git clone https://github.com/sensiolabs/security-checker.git
+    - cd security-checker
+    - composer install
+    - php security-checker security:check ../composer.lock
+  allow_failure: false
+  dependencies: []
+  cache:
+    paths:
+      - security-checker/
+
+sast:
+  stage: security
+  allow_failure: false
+  <<: *only-default
+
+phpcs-security-audit-sast:
+  stage: security
+  <<: *only-default
+  allow_failure: false
+  dependencies:
+    - composer
+
+eslint-sast:
+  stage: security
+  <<: *only-default
+  dependencies:
+    - build-assets
+
+dependency_scanning:
+  stage: security
+  <<: *only-default
+
+code_quality:
+  stage: testing
+  <<: *only-default
+
+license_management:
+  stage: testing
+  <<: *only-default
+
+container_scanning:
+  stage: testing
+  <<: *only-default
+  dependencies: []
+  allow_failure: false

@@ -1,0 +1,37 @@
+version: "3.1"
+
+services:
+
+    db:
+        image: mongo
+        restart: unless-stopped
+        environment:
+          - MONGO_INITDB_DATABASE=datenkraken
+        networks:
+            - default
+        ports:
+            - 27017:27017
+        volumes:
+            - db:/var/lib/mysql
+
+    web:
+        build: .
+        restart: unless-stopped
+        depends_on:
+            - "db"
+        networks:
+            - default
+        ports:
+            - 5454:80
+        volumes:
+            #- .env.dev:/var/www/html/env/.env
+            - storage:/var/www/html/webapp/storage
+
+networks:
+    default:
+        driver: bridge
+
+volumes:
+    db:
+    env:
+    storage:

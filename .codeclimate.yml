@@ -1,0 +1,35 @@
+---
+version: "2"
+plugins:
+  csslint:
+    enabled: true
+  duplication:
+    enabled: true
+    config:
+      languages:
+      - javascript
+      - php
+  eslint:
+    enabled: true
+  fixme:
+    enabled: true
+  phpcodesniffer:
+    enabled: true
+    config:
+      standard: "PSR1,PSR2"
+exclude_patterns:
+- config/
+- db/
+- dist/
+- features/
+- "**/node_modules/"
+- script/
+- "**/spec/"
+- "**/test/"
+- "**/tests/"
+- Tests/
+- "**/vendor/"
+- "**/*_test.go"
+- "**/*.d.ts"
+- "**/*.min.js"
+- "**/*.min.css"

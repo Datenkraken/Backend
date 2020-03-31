@@ -1,0 +1,36 @@
+"""Wifi information from a device"""
+type WifiData {
+  """The timestamp of the dataset"""
+  timestamp: String!
+
+  """The SSID of the currently connected Wifi"""
+  ssid: String
+
+  """The BSSID of the currently connected Wifi"""
+  bssid: String
+
+  """The received signal strength indicator in dBm"""
+  rssi: Int
+}
+
+"""Wifi information from a device"""
+input createWifiData {
+  """The timestamp of the dataset"""
+  timestamp: DateTime!,
+
+  """The SSID of the currently connected Wifi"""
+  ssid: String,
+
+  """The BSSID of the currently connected Wifi"""
+  bssid: String,
+
+  """The received signal strength indicator in dBm"""
+  rssi: Int
+}
+
+extend type Mutation {
+  """
+  A mutation to submit new information about the Wifi connectivity of a user
+  """
+  submitWifiData(input: [createWifiData]): [WifiData] @createWithCurrentUser
+}

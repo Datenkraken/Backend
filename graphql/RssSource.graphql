@@ -1,0 +1,25 @@
+"""A rss source"""
+type RssSource {
+  """The id of the rss source"""
+  id: String!
+
+  """The name of the rss source"""
+  name: String
+
+  """The description of the rss source"""
+  description: String
+
+  """The URL of the rss source"""
+  url: String
+
+  """The associated categories"""
+  categories: [Category]
+}
+
+extend type Query {
+  """
+  Query for RSS-Sources.
+  """
+  rssSources(id: ID @where(operator: "="), url: String @where(operator: "=")): [RssSource] @all
+}
+

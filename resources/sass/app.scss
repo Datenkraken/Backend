@@ -1,0 +1,37 @@
+// Variables
+@import 'variables';
+
+@tailwind base;
+
+@tailwind components;
+
+@tailwind utilities;
+
+// wysiwyg editor sytle
+.ck-content {
+	@apply text-gray-900;
+}
+
+.ck-content h1 {
+	@apply text-4xl text-gray-800 inline-block pb-1;
+}
+
+.ck-content h2 {
+	@apply text-2xl text-gray-800 inline-block pb-1;
+}
+
+.ck-content h3 {
+	@apply text-xl text-gray-800 inline-block pb-1;
+}
+
+.ck-content ul {
+	@apply list-disc pl-4;
+}
+
+.ck-content ol {
+	@apply list-decimal pl-4;
+}
+
+// .ck-content li {
+// 	@apply px-2 inline-block;
+// }

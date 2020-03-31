@@ -1,0 +1,40 @@
+"""Types of events that are source related"""
+enum SourceEventType {
+  """Event that is dispached when an source is opened"""
+  ADDED @enum(value: "added")
+  """Event that is dispached when an source is removed"""
+  REMOVED @enum(value: "removed")
+  """Event that is dispached when an source is filtered by"""
+  FILTERED @enum(value: "filtered")
+}
+
+"""Event that includes several kinds of events that are source related"""
+type SourceEvent {
+  """The timestamp of the dataset"""
+  timestamp: DateTime!,
+
+  """Type of the source event"""
+  type: SourceEventType!,
+
+  """URL of the source"""
+  url: String
+}
+
+"""Event that includes several kinds of events that are source related"""
+input createSourceEvent {
+  """The timestamp of the dataset"""
+  timestamp: DateTime!,
+
+  """Type of the source event"""
+  type: SourceEventType!,
+
+  """URL of the source"""
+  url: String
+}
+
+extend type Mutation {
+  """
+  A mutation to submit new source events a user has generated
+  """
+  submitSourceEvent(input: [createSourceEvent]): [SourceEvent] @createWithCurrentUser
+}

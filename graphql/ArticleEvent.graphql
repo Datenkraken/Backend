@@ -1,0 +1,51 @@
+"""Types of events that are article related"""
+enum ArticleEventType {
+  """Event that is dispached when an article is opened"""
+  OPENED @enum(value: "opened")
+
+  """Event that is dispached when an chometab is opened"""
+  CHROMEOPENED @enum(value: "chromeopen")
+
+  """Event that is dispached when an article is saved"""
+  SAVED @enum(value: "saved")
+
+  """Event that is dispached when an article is shared"""
+  SHARED @enum(value: "shared")
+}
+
+
+"""Event that includes several kinds of events that are article related"""
+type ArticleEvent {
+  """The timestamp of the dataset"""
+  timestamp: DateTime!,
+
+  """Type of the article event"""
+  type: ArticleEventType!,
+
+  """Title of the article"""
+  title: String
+
+  """URL of the article"""
+  url: String
+}
+
+"""Event that includes several kinds of events that are article related"""
+input createArticleEvent {
+  """The timestamp of the dataset"""
+  timestamp: DateTime!,
+
+  """Type of the article event"""
+  type: ArticleEventType!,
+
+  """Title of the article"""
+  title: String
+
+  """URL of the article"""
+  url: String
+}
+extend type Mutation {
+  """
+  A mutation to submit new Article events a user has generated
+  """
+  submitArticleEvent(input: [createArticleEvent]): [ArticleEvent] @createWithCurrentUser
+}
