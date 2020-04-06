@@ -2,7 +2,7 @@
 
 @section('maincontent')
     <div class="flex flex-col w-full">
-        <div class="flex-grow">
+        <div class="flex-grow overflow-auto">
             @yield('content')
         </div>
         <footer class="flex flex-shrink-0 justify-center h-10 text-black">
