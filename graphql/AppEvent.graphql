@@ -40,5 +40,5 @@ extend type Query {
   """
   A query to get the count of all app open events for a given time period
   """
-  appOpened(startDate: Date, endDate: Date): [DateValue]
+  appOpened(startDate: Date, endDate: Date): [DateValue] @isAdmin
 }
