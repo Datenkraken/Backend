@@ -27,7 +27,7 @@ type Query {
   """
   Query to get the user count for a given time period, ordered by date
   """
-  userCount(startDate: Date, endDate: Date): UserCounts
+  userCount(startDate: Date, endDate: Date): UserCounts @isAdmin
 }
 
 #import AppEvent.graphql
