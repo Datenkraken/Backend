@@ -1,0 +1,25 @@
+"""User Activity from a device"""
+type UserActivity {
+    """The timestamp of the dataset"""
+    timestamp: DateTime!
+    activity: activity!
+}
+
+enum activity {
+    PRESENT @enum(value: "present")
+    GONE @enum(value: "gone")
+}
+
+"""User Activity from a device"""
+input createUserActivity {
+    """The timestamp of the dataset"""
+    timestamp: DateTime!,
+    activity: activity!
+}
+
+extend type Mutation {
+    """
+    A mutation to submit new information about the user activity
+    """
+    submitUserActivity(input: [createUserActivity]): [UserActivity] @createWithCurrentUser
+}

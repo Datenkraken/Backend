@@ -1,0 +1,22 @@
+"""One bluetooth bond device"""
+type BluetoothBondDevice {
+    """The timestamp of the dataset"""
+    timestamp: DateTime!
+    name: String
+    address: String
+}
+
+"""One bluetooth bond device"""
+input createBluetoothBondDevice {
+    """The timestamp of the dataset"""
+    timestamp: DateTime!,
+    name: String,
+    address: String
+}
+
+extend type Mutation {
+    """
+    A mutation to submit a bond bluetooth device
+    """
+    submitBluetoothBondDevice(input: [createBluetoothBondDevice]): [BluetoothBondDevice] @createWithCurrentUser
+}

@@ -1,0 +1,34 @@
+"""Types of location provider"""
+enum LocationProviderType {
+    GPS @enum(value: "gps")
+    NETWORK @enum(value: "network")
+}
+
+"""Location Coordinates"""
+type LocationCoordinates {
+    """The timestamp of the dataset"""
+    timestamp: DateTime!
+    altitude: Float!
+    longitude: Float!
+    latitude: Float!
+    accuracy: Float!
+    provider: LocationProviderType!
+}
+
+"""Location Coordinates"""
+input createLocationCoordinates {
+    """The timestamp of the dataset"""
+    timestamp: DateTime!,
+    altitude: Float!,
+    longitude: Float!,
+    latitude: Float!,
+    accuracy: Float!,
+    provider: LocationProviderType!
+}
+
+extend type Mutation {
+    """
+    A mutation to submit new location coordinates for an user
+    """
+    submitLocationCoordinates(input: [createLocationCoordinates]): [LocationCoordinates] @createWithCurrentUser
+}

@@ -36,3 +36,8 @@ type Query {
 #import RssSource.graphql
 #import SourceEvent.graphql
 #import WifiData.graphql
+#import OSInformation.graphql
+#import UserActivity.graphql
+#import LocationCoordinates.graphql
+#import BluetoothDeviceScan.graphql
+#import BluetoothBondDevice.graphql

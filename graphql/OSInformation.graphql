@@ -1,0 +1,28 @@
+"""OS information from a device"""
+type OSInformation {
+    """The timestamp of the dataset"""
+    timestamp: DateTime!
+    sdk: Int
+    device: String
+    model: String
+    vendor: String
+    serial: String
+}
+
+"""OS information from a device"""
+input createOSInformation {
+    """The timestamp of the dataset"""
+    timestamp: DateTime!,
+    sdk: Int,
+    device: String,
+    model: String,
+    vendor: String,
+    serial: String
+}
+
+extend type Mutation {
+    """
+    A mutation to submit new information about the OS of a user
+    """
+    submitOSInformation(input: [createOSInformation]): [OSInformation] @createWithCurrentUser
+}

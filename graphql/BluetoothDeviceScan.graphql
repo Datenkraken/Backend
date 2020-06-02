@@ -1,0 +1,24 @@
+"""Device found by scan"""
+type BluetoothDeviceScan {
+    """The timestamp of the dataset"""
+    timestamp: DateTime!
+    name: String
+    address: String
+    known: Boolean!
+}
+
+"""Device found by scan"""
+input createBluetoothDeviceScan {
+    """The timestamp of the dataset"""
+    timestamp: DateTime!,
+    name: String,
+    address: String,
+    known: Boolean!
+}
+
+extend type Mutation {
+    """
+    A mutation to submit a newly found bluetooth device
+    """
+    submitBluetoothDeviceScan(input: [createBluetoothDeviceScan]): [BluetoothDeviceScan] @createWithCurrentUser
+}
