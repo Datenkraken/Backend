@@ -21,7 +21,7 @@ type ScanResult {
     """The timestamp of the dataset"""
     userId: String!
     timestamp: DateTime!
-    name: String!
+    name: String
     address: String!
     known: Boolean!
 }
