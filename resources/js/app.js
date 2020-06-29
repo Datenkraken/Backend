@@ -23,7 +23,8 @@ import {
     RetentionSettings,
     ConfirmModal,
     UserSelection,
-    UserMap
+    UserMap,
+    BluetoothNetwork
 } from './components';
 import { AuthorizedClients, Clients, PersonalAccessTokens } from './components/passport';
 import { LineChart, UserCountChart, AppOpenedChart } from './components/charts';
@@ -36,7 +37,7 @@ import CKEditor from '@ckeditor/ckeditor5-vue';
 import Notifications from 'vue-notification';
 import VueFlatPickr from 'vue-flatpickr-component';
 import 'flatpickr/dist/flatpickr.css';
-
+import 'vue-d3-network/dist/vue-d3-network.css';
 import Lang from 'lang.js';
 import VueFlags from "@growthbunker/vueflags";
 
@@ -107,8 +108,6 @@ Vue.component('dk-chart-container', ChartContainer);
 Vue.component('dk-line-chart', LineChart);
 Vue.component('dk-user-count-chart', UserCountChart);
 Vue.component('dk-app-opened-chart', AppOpenedChart);
-Vue.component('dk-user-map', UserMap);
-Vue.component('dk-user-selection', UserSelection);
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to

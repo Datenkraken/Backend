@@ -16,9 +16,22 @@ input createBluetoothDeviceScan {
     known: Boolean!
 }
 
+"""Device found by scan"""
+type ScanResult {
+    """The timestamp of the dataset"""
+    userId: String!
+    timestamp: DateTime!
+    name: String!
+    address: String!
+    known: Boolean!
+}
+
 extend type Mutation {
     """
     A mutation to submit a newly found bluetooth device
     """
     submitBluetoothDeviceScan(input: [createBluetoothDeviceScan]): [BluetoothDeviceScan] @createWithCurrentUser
+}
+extend type Query {
+    bluetoothDeviceScanned: [ScanResult] @isAdmin
 }

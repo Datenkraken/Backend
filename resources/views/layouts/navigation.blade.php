@@ -6,6 +6,9 @@
         @component('components.navitem', ['url' => 'maps', 'name' =>
         __('navigation.maps'), 'icon' => 'map-marker-alt'])
             @endcomponent
+        @component('components.navitem', ['url' => 'bluetooth', 'name' =>
+            __('navigation.bluetooth'), 'icon' => 'home'])
+        @endcomponent
         @component('components.navitem', ['url' => 'users', 'name' =>
             __('navigation.users'), 'icon' => 'users'])
         @endcomponent
