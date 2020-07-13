@@ -23,6 +23,14 @@
                 nodes: [],
                 edges: [],
                 dev: [],
+                scans: [],
+                scan_matrix: [],
+                users: [],
+                timeScale: {
+                    startTime: null,
+                    endTime: null,
+                    stepSize: 20 * 60 * 1000,
+                },
                 options: {
                     nodeSize: 30,
                     nodeLabels: true,
@@ -37,11 +45,17 @@
         apollo: {
             bluetoothDeviceScanned: gql`query{
                 bluetoothDeviceScanned {
-                    userId
-                    timestamp
-                    name
-                    address
-                    known
+                    scans {
+                        t
+                        u
+                        d
+                        k
+                    }
+                    users
+                    devices {
+                        a
+                        n
+                    }
                 }
             }`
         },
@@ -60,73 +74,106 @@
                 const pat = (hash & 0x00FFFFFF).toString(16).toUpperCase()
                 return "#000000".substring(0, 7 - pat.length) + pat;
             },
-            hashCode(str) {
-                let hash = 7;
-                for (let i = 0; i < str.length; i++) {
-                    hash = str.charCodeAt(i) + (hash << 5 - hash);
+            addTimeStampToMatrix(n1, n2, timestamp) {
+                if (n1 === n2) return;
+                let modifier = (n1 < n2);
+                if (!modifier) {
+                    let n3 = n1;
+                    n1 = n2;
+                    n2 = n3;
                 }
-                return hash;
-            }
+                this.scan_matrix[n1][n2].push([timestamp, modifier]);
+            },
+            computeMatrix() {
+                let devScans = [];
+                console.log("computing Matrix...");
+                let debugCounter = 0;
+                for (let s of this.scans) {
+                    if (devScans.length < s.d || devScans[s.d] === null || devScans[s.d] === undefined) {
+                        devScans[s.d] = new Set([s.u]);
+                        debugCounter++;
+                    } else if (!devScans[s.d].has(s.u)) {
+                        devScans[s.d].add(s.u);
+                        debugCounter++;
+                    }
+                }
+
+                console.log("got " + devScans.length + " devices, created " + debugCounter + "data points, urghs..")
+                for (let s of this.scans) {
+                    for (let n of devScans[s.d]) {
+                        this.addTimeStampToMatrix(s.u, n, s.t);
+                    }
+                }
+                this.scans = [];
+            },
+            addToEdgesInInterval(n1, n2, startTime, endTime) {
+                let index = 0;
+                while (index < this.scan_matrix[n1][n2].length && this.scan_matrix[n1][n2][index][0] < startTime) {
+                    index++;
+                }
+                if (this.scan_matrix[n1][n2].length <= index
+                    || this.scan_matrix[n1][n2][index][0] < startTime
+                    || this.scan_matrix[n1][n2][index][0] > endTime) return;
+                let edgeValue = 1;
+                while (index < this.scan_matrix[n1][n2].length && this.scan_matrix[n1][n2][index][0] < endTime) {
+                    edgeValue++; //TODO: Weighting
+                    index++;
+                }
+                this.edges.push({
+                    id: n1 + ":" + n2,
+                    name: "",
+                    tid: this.users[n1],
+                    sid: this.users[n2],
+                    _svgAttrs: {
+                        'stroke-width': edgeValue
+                    }
+                })
+            },
+            computeEdgesInInterval(startTime, endTime) {
+                console.log("computing edges for Interval: " + startTime + " - " + endTime + " with an matrix size of " + this.scan_matrix.length)
+                for (let i = 0; i < this.scan_matrix.length; i++) {
+                    for (let j = i + 1; j < this.scan_matrix.length; j++) {
+                        this.addToEdgesInInterval(i, j, startTime, endTime);
+                    }
+                }
+            },
         },
         functions: {
 
         },
         watch: {
             bluetoothDeviceScanned: {
-                handler(devices) {
-                    for (let dev of devices) {
-                        if (this.nodes.findIndex(o=>o.id===dev.userId) === -1) {
-                            this.nodes.push({
-                                id: dev.userId,
-                                name: dev.userId,
-                                _color: this.strToRGB(dev.userId),
-                            });
+                handler(transformedData) {
+                    if (transformedData === null) {
+                        return;
+                    }
+                    this.dev = transformedData.devices;
+                    this.scan_matrix = [transformedData.users.length];
+                    for (let i = 0; i < transformedData.users.length; i++) {
+                        this.scan_matrix[i] = [transformedData.users.length];
+                        for (let j = 0; j < transformedData.users.length; j++) {
+                            this.scan_matrix[i][j] = [];
                         }
-
-                        if (this.dev.findIndex(o=>o.address===dev.address) === -1) {
-                            this.dev.push({
-                                address: dev.address,
-                                user: []
-                            });
-                        }
-                        let users = this.dev.find(o=>o.address===dev.address).user;
-                        if (users.findIndex(o=>o.id===dev.userId) === -1) {
-                            users.push({
-                                id:  dev.userId,
-                                rel: 1,
-                            });
-                        }
-
-                        users.find(o=>o.id===dev.userId).rel++;
                     }
 
-                    for (let dev of this.dev) {
-                        for(let i = 0; i < dev.user.length - 1; i++) {
-                            for(let j = i; j < dev.user.length; j++) {
-                                let u1 = this.hashCode(dev.user[i].id);
-                                let u2 = this.hashCode(dev.user[j].id);
-                                let source = (u1 > u2 ? u2 : u1);
-                                let target = (u1 < u2 ? u2 : u1);
-                                let id = source.toString() + ":" + target;
-                                let index = this.edges.findIndex(o=>o.id===id);
-                                if (index === -1) {
-                                    this.edges.push({
-                                        id: dev.user[i].id + ":" + dev.user[j].id,
-                                        name: dev.address,
-                                        tid: dev.user[j].id,
-                                        sid: dev.user[i].id,
-                                        _svgAttrs: {
-                                            'stroke-width': dev.user[i].rel + dev.user[j].rel,
-                                        }
-                                    })
-                                } else {
-                                    this.edges[index].name += "\n" + dev.address;
-                                    this.edges[index]._svgAttrs['stroke-width'] += dev.user[i].rel + dev.user[j].rel;
-                                }
-
-                            }
-                        }
+                    for (let u of transformedData.users) {
+                        this.nodes.push({
+                            id: u,
+                            name: u,
+                            _color: this.strToRGB(u),
+                        })
                     }
+                    this.users = transformedData.users;
+                    this.scans = transformedData.scans;
+
+                    if (this.timeScale.startTime == null || this.timeScale.endTime == null) {
+                        this.timeScale.startTime = transformedData.scans[0].t - (transformedData.scans[0].t % this.timeScale.stepSize);
+                        this.timeScale.endTime = transformedData.scans[transformedData.scans.length - 1].t
+                        - (transformedData.scans[transformedData.scans.length - 1].t % this.timeScale.stepSize)
+                        + this.timeScale.stepSize;
+                    }
+                    this.computeMatrix();
+                    this.computeEdgesInInterval(this.timeScale.startTime, this.timeScale.endTime);
                 }
             }
         }

@@ -16,14 +16,31 @@ input createBluetoothDeviceScan {
     known: Boolean!
 }
 
-"""Device found by scan"""
-type ScanResult {
-    """The timestamp of the dataset"""
-    userId: String!
-    timestamp: DateTime!
-    name: String
-    address: String!
-    known: Boolean!
+"""Scan of a single device by a single user, single letters to describe fields to reduce payload size"""
+type Scan {
+    """timestamp"""
+    t: Int!,
+    """user_index"""
+    u: Int!,
+    """device_index"""
+    d: Int!,
+    """is the device known?"""
+    k: Boolean!
+}
+
+"""Single device, with it's address and name, single letters to describe fields to reduce payload size"""
+type Device {
+    """address"""
+    a: String!,
+    """name"""
+    n: String
+}
+
+"""Whole Transformed Data"""
+type TransformedScanData {
+    scans: [Scan],
+    users: [String],
+    devices: [Device]
 }
 
 extend type Mutation {
@@ -33,5 +50,5 @@ extend type Mutation {
     submitBluetoothDeviceScan(input: [createBluetoothDeviceScan]): [BluetoothDeviceScan] @createWithCurrentUser
 }
 extend type Query {
-    bluetoothDeviceScanned: [ScanResult] @isAdmin
+    bluetoothDeviceScanned: TransformedScanData @isAdmin
 }
