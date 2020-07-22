@@ -39,6 +39,10 @@
         "leaflet": "^1.6.0",
         "moment": "^2.27.0",
         "tailwindcss": "^1.5.2",
+        "uuid": "^8.2.0",
+        "vis-data": "^6.6.1",
+        "vis-network": "^7.10.0",
+        "vis-util": "^4.3.2",
         "vue": "^2.5.17",
         "vue-apollo": "^3.0.3",
         "vue-chartjs": "^3.5.0",
@@ -48,5 +52,6 @@
         "vue-slider-component": "^3.2.2",
         "vue-timeline-slider": "^0.2.9",
         "vue2-leaflet": "^2.5.2"
+        "vue-vis-network": "^1.0.1"
     }
 }

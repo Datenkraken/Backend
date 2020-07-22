@@ -37,7 +37,7 @@ import CKEditor from '@ckeditor/ckeditor5-vue';
 import Notifications from 'vue-notification';
 import VueFlatPickr from 'vue-flatpickr-component';
 import 'flatpickr/dist/flatpickr.css';
-import 'vue-d3-network/dist/vue-d3-network.css';
+import "vue-vis-network/dist/vueVisNetwork.css";
 import Lang from 'lang.js';
 import VueFlags from "@growthbunker/vueflags";
 

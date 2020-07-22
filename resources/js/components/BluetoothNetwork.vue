@@ -1,22 +1,70 @@
 <template>
- <div class="h-full w-full">
-     <d3-network
-         :net-nodes="nodes"
-         :net-links="edges"
-         :options="options">
-
-     </d3-network>
- </div>
+    <div class="h-full flex flex-col lg:flex-row">
+        <div class="h-full lg:w-3/4">
+            <div class="w-full h-auto bg-bgsecondary">
+                <network
+                    :nodes="nodes"
+                    :edges="edges"
+                    :options="options">
+                </network>
+            </div>
+            <div class="w-full h-auto pt-8 pl-8 pr-8">
+                <div class="bg-gray-400">
+                    <vue-slider
+                        v-model="timeScale.selected"
+                        :min="timeScale.startTime"
+                        :max="timeScale.endTime"
+                        :interval="timeScale.stepSize"
+                        :tooltip-formatter="timeScale.formatter"
+                        :enable-cross="false"
+                        :dotSize="28"
+                        :height="8">
+                    </vue-slider>
+                </div>
+            </div>
+        </div>
+        <div class="h-full lg:w-1/4">
+            <table>
+                <thead>
+                <tr>
+                    <th class="py-4 px-6 bg-gray-100 font-bold uppercase text-sm text-gray-900 border-b-2 border-gray-300">
+                        {{$lang.get('map.show')}}
+                    </th>
+                    <th class="py-4 px-6 bg-gray-100 font-bold uppercase text-sm text-gray-900 border-b-2 border-gray-300">
+                        {{$lang.get('map.user-id')}}
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr
+                    v-for="user in users"
+                    :key="user"
+                    class="hover:bg-gray-200 border-b border-gray-300"
+                >
+                    <td class="py-4 px-6">
+                        <label>
+                            <input @click="boxChecked(user)" class="form-checkbox" type="checkbox" name="select-box" />
+                        </label>
+                    </td>
+                    <td class="py-4 px-6">
+                        {{ user }}
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </template>
-
 <script>
-    import D3Network from 'vue-d3-network';
+    import {Network} from 'vue-vis-network';
+    import VueSlider from 'vue-slider-component';
     import gql from 'graphql-tag';
 
     export default {
         name: "BluetoothNetwork",
         components: {
-            D3Network
+            Network,
+            VueSlider
         },
         data() {
             return {
@@ -27,17 +75,31 @@
                 scan_matrix: [],
                 users: [],
                 timeScale: {
-                    startTime: null,
-                    endTime: null,
-                    stepSize: 20 * 60 * 1000,
+                    selected: [0,0],
+                    startTime: 0,
+                    endTime: 0,
+                    stepSize: 20 * 60,
+                    formatter: v => `${new Date(v * 1000).toISOString()}`,
                 },
                 options: {
-                    nodeSize: 30,
-                    nodeLabels: true,
-                    force: 10000,
-                    linkWidth: 0,
-                    linkLabels: true,
-                    canvas: false
+                    width: '100%',
+                    height: '800px',
+                    nodes: {
+                        shape: "dot",
+                        mass: 1,
+                        borderWidth: 4,
+                        size: 12,
+                        physics: true,
+                        font: {
+                            color: "#f56565",
+                        },
+                        color: {
+                            border: "#2D3748",
+                        }
+                    },
+                    edges: {
+                        physics: false
+                    }
                 }
             };
         },
@@ -74,6 +136,7 @@
                 const pat = (hash & 0x00FFFFFF).toString(16).toUpperCase()
                 return "#000000".substring(0, 7 - pat.length) + pat;
             },
+
             addTimeStampToMatrix(n1, n2, timestamp) {
                 if (n1 === n2) return;
                 let modifier = (n1 < n2);
@@ -84,9 +147,9 @@
                 }
                 this.scan_matrix[n1][n2].push([timestamp, modifier]);
             },
+
             computeMatrix() {
                 let devScans = [];
-                console.log("computing Matrix...");
                 let debugCounter = 0;
                 for (let s of this.scans) {
                     if (devScans.length < s.d || devScans[s.d] === null || devScans[s.d] === undefined) {
@@ -98,7 +161,6 @@
                     }
                 }
 
-                console.log("got " + devScans.length + " devices, created " + debugCounter + "data points, urghs..")
                 for (let s of this.scans) {
                     for (let n of devScans[s.d]) {
                         this.addTimeStampToMatrix(s.u, n, s.t);
@@ -106,6 +168,7 @@
                 }
                 this.scans = [];
             },
+
             addToEdgesInInterval(n1, n2, startTime, endTime) {
                 let index = 0;
                 while (index < this.scan_matrix[n1][n2].length && this.scan_matrix[n1][n2][index][0] < startTime) {
@@ -115,28 +178,35 @@
                     || this.scan_matrix[n1][n2][index][0] < startTime
                     || this.scan_matrix[n1][n2][index][0] > endTime) return;
                 let edgeValue = 1;
-                while (index < this.scan_matrix[n1][n2].length && this.scan_matrix[n1][n2][index][0] < endTime) {
-                    edgeValue++; //TODO: Weighting
+                let modifier = null;
+                while (index < this.scan_matrix[n1][n2].length && this.
+                    scan_matrix[n1][n2][index][0] < endTime) {
+                    edgeValue += modifier !== this.scan_matrix[n1][n2][1] ? 1 : 0.25
+                    modifier = this.scan_matrix[n1][n2][1];
                     index++;
                 }
                 this.edges.push({
-                    id: n1 + ":" + n2,
-                    name: "",
-                    tid: this.users[n1],
-                    sid: this.users[n2],
-                    _svgAttrs: {
-                        'stroke-width': edgeValue
-                    }
+                    from: this.users[n1],
+                    to: this.users[n2],
+                    value: edgeValue,
+                    physics: false
                 })
             },
+
             computeEdgesInInterval(startTime, endTime) {
-                console.log("computing edges for Interval: " + startTime + " - " + endTime + " with an matrix size of " + this.scan_matrix.length)
+                this.edges = [];
                 for (let i = 0; i < this.scan_matrix.length; i++) {
                     for (let j = i + 1; j < this.scan_matrix.length; j++) {
                         this.addToEdgesInInterval(i, j, startTime, endTime);
                     }
                 }
             },
+
+            boxChecked(user) {
+                let index = this.nodes.findIndex(el => el.id === user);
+                this.nodes[index].physics = !this.nodes[index].physics;
+                this.nodes[index].hidden = !this.nodes[index].hidden;
+            }
         },
         functions: {
 
@@ -147,7 +217,6 @@
                     if (transformedData === null) {
                         return;
                     }
-                    this.dev = transformedData.devices;
                     this.scan_matrix = [transformedData.users.length];
                     for (let i = 0; i < transformedData.users.length; i++) {
                         this.scan_matrix[i] = [transformedData.users.length];
@@ -159,21 +228,38 @@
                     for (let u of transformedData.users) {
                         this.nodes.push({
                             id: u,
-                            name: u,
-                            _color: this.strToRGB(u),
+                            label: u,
+                            physics: false,
+                            hidden: true,
+                            color: {
+                                background:  this.strToRGB(u),
+                            },
                         })
                     }
+
                     this.users = transformedData.users;
                     this.scans = transformedData.scans;
 
-                    if (this.timeScale.startTime == null || this.timeScale.endTime == null) {
-                        this.timeScale.startTime = transformedData.scans[0].t - (transformedData.scans[0].t % this.timeScale.stepSize);
-                        this.timeScale.endTime = transformedData.scans[transformedData.scans.length - 1].t
+                    this.timeScale.endTime = transformedData.scans[transformedData.scans.length - 1].t
                         - (transformedData.scans[transformedData.scans.length - 1].t % this.timeScale.stepSize)
                         + this.timeScale.stepSize;
-                    }
+
+                    this.timeScale.selected[1] = this.timeScale.endTime;
+                    this.timeScale.selected[0] = this.timeScale.startTime;
+
+                    this.timeScale.startTime = transformedData.scans[0].t - (transformedData.scans[0].t % this.timeScale.stepSize);
+
                     this.computeMatrix();
-                    this.computeEdgesInInterval(this.timeScale.startTime, this.timeScale.endTime);
+                    this.computeEdgesInInterval(this.timeScale.selected[0], this.timeScale.selected[1]);
+                    transformedData.scans = [];
+                    transformedData.users = [];
+                    transformedData.devices = [];
+                }
+            },
+            timeScale: {
+                deep: true,
+                handler() {
+                    this.computeEdgesInInterval(this.timeScale.selected[0], this.timeScale.selected[1]);
                 }
             }
         }
@@ -182,5 +268,8 @@
 </script>
 
 <style scoped>
-    canvas{position:absolute;top:0;left:0}.net{height:100%;margin:0}.node{stroke:rgba(18,120,98,.7);stroke-width:3px;-webkit-transition:fill .5s ease;transition:fill .5s ease;fill:#dcfaf3}.node.selected{stroke:#caa455}.node.pinned{stroke:rgba(190,56,93,.6)}.link{stroke:rgba(18,120,98,.3)}.link,.node{stroke-linecap:round}.link:hover,.node:hover{stroke:#be385d;stroke-width:5px}.link.selected{stroke:rgba(202,164,85,.6)}.curve{fill:none}.link-label,.node-label{fill:#127862}.link-label{-webkit-transform:translateY(-.5em);transform:translateY(-.5em);text-anchor:middle}
+    @import '~vue-slider-component/theme/antd.css';
+    div.vis-network {
+        background-color: red;
+    }
 </style>

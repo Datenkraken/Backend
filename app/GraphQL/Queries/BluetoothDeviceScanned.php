@@ -25,7 +25,7 @@ class BluetoothDeviceScanned
      */
     public function __invoke($rootValue, array $args, GraphQLContext $context, ResolveInfo $resolveInfo)
     {
-        $data = BluetoothDeviceScan::all()->sortBy("timestamp");
+        $data = BluetoothDeviceScan::orderBy('timestamp', 'asc')->get();
 
         $connections = [];
         $users = new Map();
@@ -36,9 +36,8 @@ class BluetoothDeviceScanned
         $user_map_size = 0;
         $device_map_size = 0;
         foreach($data as $record) {
-            $user_index = $users->get($record->user_id, null);
-
-            if ($user_index == null) {
+            $user_index = $users->get($record->user_id, -1);
+            if ($user_index == -1) {
                 $users->put($record->user_id, $user_map_size);
                 $users_array[] = $record->user_id;
                 $user_index = $user_map_size;
@@ -66,6 +65,7 @@ class BluetoothDeviceScanned
                 "d" => $device_index,
                 "k" => $record->known];
         }
+
         return [
             "scans" => $connections,
             "users" => $users_array,
