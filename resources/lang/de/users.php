@@ -2,6 +2,7 @@
 
 return [
     "no-users" => "Keine Nutzer vorhanden.",
+    "id" => "Nutzer ID",
     "email" => "Email",
     "created" => "Erstellt am",
     "role" => "Rolle",

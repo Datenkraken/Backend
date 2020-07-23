@@ -3,16 +3,33 @@
  * includes Vue and other libraries. It is a great starting point when
  * building robust, powerful web applications using Vue and Laravel.
  */
+
 require('./bootstrap.js');
 import Vue from 'vue';
 window.Vue = Vue;
 
-import { Users, Sources, SourceCategoryContainer, Categories, Modal, Button, DocumentEdit, ChartContainer, AccountDropdown, LanguageDropdown, DatePicker, RetentionSettings, ConfirmModal } from './components';
+import {
+    Users,
+    Sources,
+    SourceCategoryContainer,
+    Categories,
+    Modal,
+    Button,
+    DocumentEdit,
+    ChartContainer,
+    AccountDropdown,
+    LanguageDropdown,
+    DatePicker,
+    RetentionSettings,
+    ConfirmModal,
+    UserSelection,
+    UserMap
+} from './components';
 import { AuthorizedClients, Clients, PersonalAccessTokens } from './components/passport';
 import { LineChart, UserCountChart, AppOpenedChart } from './components/charts';
 
 import { library as falibrary } from '@fortawesome/fontawesome-svg-core';
-import { faCogs, faSignOutAlt, faKey, faEdit, faTrash, faCalendar, faTimes, faCircle, faCircleNotch, faUserShield, faHome, faUsers, faFolderOpen, faFileAlt, faIdCard, faSignInAlt, faHourglassEnd } from '@fortawesome/free-solid-svg-icons';
+import { faCogs, faSignOutAlt, faKey, faEdit, faTrash, faCalendar, faTimes, faCircle, faCircleNotch, faUserShield, faHome, faUsers, faFolderOpen, faFileAlt, faIdCard, faSignInAlt, faHourglassEnd, faMapMarkerAlt} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 import CKEditor from '@ckeditor/ckeditor5-vue';
@@ -26,7 +43,10 @@ import VueFlags from "@growthbunker/vueflags";
 import ApolloClient from 'apollo-boost';
 import VueApollo from 'vue-apollo';
 
-falibrary.add(faCogs, faSignOutAlt, faKey, faEdit, faTrash, faCalendar, faTimes, faCircle, faCircleNotch, faUserShield, faHome, faUsers, faFolderOpen, faFileAlt, faIdCard, faSignInAlt, faHourglassEnd);
+import 'leaflet/dist/leaflet.css';
+import 'vue-slider-component/theme/antd.css';
+
+falibrary.add(faCogs, faSignOutAlt, faKey, faEdit, faTrash, faCalendar, faTimes, faCircle, faCircleNotch, faUserShield, faHome, faUsers, faFolderOpen, faFileAlt, faIdCard, faSignInAlt, faHourglassEnd, faMapMarkerAlt);
 
 const apolloProvider = new VueApollo({
   defaultClient: new ApolloClient({
@@ -87,6 +107,8 @@ Vue.component('dk-chart-container', ChartContainer);
 Vue.component('dk-line-chart', LineChart);
 Vue.component('dk-user-count-chart', UserCountChart);
 Vue.component('dk-app-opened-chart', AppOpenedChart);
+Vue.component('dk-user-map', UserMap);
+Vue.component('dk-user-selection', UserSelection);
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to

@@ -4,7 +4,12 @@ namespace App\Models;
 
 use App\Models\Datamining\AppEvent;
 use App\Models\Datamining\ArticleEvent;
+use App\Models\Datamining\BluetoothBondDevice;
+use App\Models\Datamining\BluetoothDeviceScan;
+use App\Models\Datamining\LocationCoordinates;
+use App\Models\Datamining\OSInformation;
 use App\Models\Datamining\SourceEvent;
+use App\Models\Datamining\UserActivity;
 use App\Models\Datamining\WifiData;
 use DesignMyNight\Mongodb\Auth\User as Authenticatable;
 use Illuminate\Auth\MustVerifyEmail;
@@ -90,5 +95,30 @@ class User extends Authenticatable
     public function dataSourceEvents()
     {
         return $this->hasMany(SourceEvent::class);
+    }
+
+    public function dataCoords()
+    {
+        return $this->hasMany(LocationCoordinates::class);
+    }
+
+    public function dataBluetoothScans()
+    {
+        return $this->hasMany(BluetoothDeviceScan::class);
+    }
+
+    public function dataBondBluetoothDevices()
+    {
+        return $this->hasMany(BluetoothBondDevice::class);
+    }
+
+    public function dataOSInformation()
+    {
+        return $this->hasMany(OSInformation::class);
+    }
+
+    public function dataUserActivity()
+    {
+        return $this->hasMany(UserActivity::class);
     }
 }

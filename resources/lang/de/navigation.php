@@ -2,6 +2,7 @@
 
 return [
     "home" => "Home",
+    "maps" => "Karte",
     "users" => "Nutzer",
     "sources" => "Quellen",
     "privacy-policy" => "Datenschutzerklärung",

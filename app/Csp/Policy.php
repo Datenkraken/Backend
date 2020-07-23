@@ -15,7 +15,7 @@ class Policy extends CspPolicy
             ->addDirective(Directive::CONNECT, Keyword::SELF)
             ->addDirective(Directive::DEFAULT, Keyword::SELF)
             ->addDirective(Directive::FORM_ACTION, Keyword::SELF)
-            ->addDirective(Directive::IMG, [ Keyword::SELF, Keyword::UNSAFE_INLINE, 'data:' ])
+            ->addDirective(Directive::IMG, [ Keyword::SELF, Keyword::UNSAFE_INLINE, 'data:', '*.openstreetmap.org'])
             ->addDirective(Directive::MEDIA, Keyword::SELF)
             ->addDirective(Directive::OBJECT, Keyword::NONE)
             ->addDirective(Directive::SCRIPT, [ Keyword::STRICT_DYNAMIC, Keyword::UNSAFE_INLINE, Keyword::UNSAFE_EVAL ])

@@ -44,7 +44,7 @@ export default {
 			for (var i = 0; i < this.appOpened.length; i++) {
 				events.push({t: this.appOpened[i]["date"], y: this.appOpened[i]["value"]});
 			}
-			return { 
+			return {
 				datasets: [
 				{
 					label: this.$lang.get('home.app-opened'),

@@ -2,6 +2,7 @@
 
 return [
     "home" => "Home",
+    "maps" => "Map",
     "users" => "Users",
     "sources" => "Sources",
     "privacy-policy" => "Privacy Policy",

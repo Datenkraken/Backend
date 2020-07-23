@@ -42,6 +42,11 @@ class UserRepository extends EloquentRepository
         $instance->dataAppEvents()->delete();
         $instance->dataArticleEvents()->delete();
         $instance->dataSourceEvents()->delete();
+        $instance->dataCoords()->delete();
+        $instance->dataBluetoothScans()->delete();
+        $instance->dataBondBluetoothDevices()->delete();
+        $instance->dataOSInformation()->delete();
+        $instance->dataUserActivity()->delete();
 
         // Delete the actual user model
         $result = $instance->delete();

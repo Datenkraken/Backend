@@ -26,9 +26,20 @@ input createLocationCoordinates {
     provider: LocationProviderType!
 }
 
+type UserCoords {
+    u: String!
+    t: Int!
+    lo: Float!
+    la: Float!
+}
+
 extend type Mutation {
     """
     A mutation to submit new location coordinates for an user
     """
     submitLocationCoordinates(input: [createLocationCoordinates]): [LocationCoordinates] @createWithCurrentUser
+}
+
+extend type Query {
+    allCoords: [UserCoords] @isAdmin
 }
