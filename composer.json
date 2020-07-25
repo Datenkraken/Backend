@@ -28,7 +28,7 @@
         "spatie/laravel-csp": "^2.5"
     },
     "require-dev": {
-        "facade/ignition": "^1.2",
+        "facade/ignition": "^1.4",
         "fzaninotto/faker": "^1.9",
         "laravel/ui": "^1.2",
         "mockery/mockery": "^1.4",

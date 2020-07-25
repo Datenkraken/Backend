@@ -3,28 +3,44 @@
 namespace App\GraphQL\Directives;
 
 use Closure;
+use GraphQL\Type\Definition\ResolveInfo;
 use Illuminate\Support\Facades\Auth;
-use Nuwave\Lighthouse\Schema\Directives\BaseDirective;
 use Nuwave\Lighthouse\Schema\Values\FieldValue;
 use Nuwave\Lighthouse\Support\Contracts\FieldMiddleware;
 use Nuwave\Lighthouse\Exceptions\AuthorizationException;
+use Nuwave\Lighthouse\Support\Contracts\GraphQLContext;
+use Nuwave\Lighthouse\Support\Contracts\Directive;
 
 
-class IsAdminDirective extends BaseDirective implements FieldMiddleware
+class IsAdminDirective implements Directive, FieldMiddleware
 {
-	/**
+
+    public function name(): string
+    {
+        return "isAdmin";
+    }
+
+    /**
      * Wrap around the final field resolver.
      *
-     * @param  \Nuwave\Lighthouse\Schema\Values\FieldValue  $fieldValue
-     * @param  \Closure  $next
-	 *
-     * @return \Nuwave\Lighthouse\Schema\Values\FieldValue
+     * @param FieldValue $fieldValue
+     * @param Closure $next
+     *
+     * @return FieldValue
      */
-	public function handleField(FieldValue $fieldValue, Closure $next) {
-        if (Auth::check() && Auth::user()->is_admin) {
-			return $next($fieldValue);
-        }
+    public function handleField(FieldValue $fieldValue, Closure $next): FieldValue {
+        $previousResolver = $fieldValue->getResolver();
 
-		throw new AuthorizationException();
-	}
+        $fieldValue->setResolver(
+            function ($root, array $args, GraphQLContext $context, ResolveInfo $resolveInfo) use ($previousResolver) {
+                if (Auth::check() && Auth::user()->is_admin) {
+                    return $previousResolver($root, $args, $context, $resolveInfo);
+                }
+
+                throw new AuthorizationException("You are not an admin");
+            }
+        );
+
+        return $next($fieldValue);
+    }
 }
