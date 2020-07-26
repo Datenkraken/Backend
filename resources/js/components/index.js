@@ -14,3 +14,4 @@ export { default as RetentionSettings } from './RetentionSettings';
 export { default as UserMap } from './TrackedUserMap';
 export { default as UserSelection} from './UserSelection';
 export { default as BluetoothNetwork } from './BluetoothNetwork';
+export { default as FontAwesomeIconWrapper} from './FontAwesomeIconWrapper';
