@@ -47,6 +47,7 @@ class UserRepository extends EloquentRepository
         $instance->dataBondBluetoothDevices()->delete();
         $instance->dataOSInformation()->delete();
         $instance->dataUserActivity()->delete();
+        $instance->dataPermissionStates()->delete();
 
         // Delete the actual user model
         $result = $instance->delete();

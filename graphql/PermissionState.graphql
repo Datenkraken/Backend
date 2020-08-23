@@ -1,0 +1,20 @@
+enum AppPermission {
+    ACCESS_LOCATION @enum(value: "access_location")
+}
+
+type PermissionState {
+    timestamp: DateTime!,
+    permission: AppPermission!,
+    state: Boolean!
+}
+
+input createPermissionState {
+    timestamp: DateTime!,
+    permission: AppPermission!,
+    state: Boolean!
+}
+
+
+extend type Mutation {
+    submitPermissionState(input: [createPermissionState]): [PermissionState] @createWithCurrentUser
+}

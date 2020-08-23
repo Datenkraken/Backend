@@ -8,6 +8,7 @@ use App\Models\Datamining\BluetoothBondDevice;
 use App\Models\Datamining\BluetoothDeviceScan;
 use App\Models\Datamining\LocationCoordinates;
 use App\Models\Datamining\OSInformation;
+use App\Models\Datamining\PermissionState;
 use App\Models\Datamining\SourceEvent;
 use App\Models\Datamining\UserActivity;
 use App\Models\Datamining\WifiData;
@@ -120,5 +121,10 @@ class User extends Authenticatable
     public function dataUserActivity()
     {
         return $this->hasMany(UserActivity::class);
+    }
+
+    public function dataPermissionStates()
+    {
+        return $this->hasMany(PermissionState::class);
     }
 }
