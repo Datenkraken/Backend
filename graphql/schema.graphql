@@ -42,3 +42,4 @@ type Query {
 #import BluetoothDeviceScan.graphql
 #import BluetoothBondDevice.graphql
 #import PermissionState.graphql
+#import Log.graphql

@@ -127,4 +127,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(PermissionState::class);
     }
+
+    public function logEntries()
+    {
+        return $this->hasMany(LogEntry::class);
+    }
 }

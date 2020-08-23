@@ -48,6 +48,7 @@ class UserRepository extends EloquentRepository
         $instance->dataOSInformation()->delete();
         $instance->dataUserActivity()->delete();
         $instance->dataPermissionStates()->delete();
+        $instance->logEntries()->delete();
 
         // Delete the actual user model
         $result = $instance->delete();

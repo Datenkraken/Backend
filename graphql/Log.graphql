@@ -1,0 +1,14 @@
+type LogEntry {
+    message: String!,
+    type: String!
+}
+
+input createLogEntry {
+    message: String!,
+    type: String!
+}
+
+
+extend type Mutation {
+    submitLog(input: [createLogEntry]): [LogEntry] @createWithCurrentUser
+}
