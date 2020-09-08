@@ -27,14 +27,14 @@
         "php-ds/php-ds": "^1.2",
         "spatie/laravel-cors": "^1.6",
         "spatie/laravel-csp": "^2.5",
-        "ext-mongodb": "^1.8"
+        "ext-mongodb": "^1.7"
     },
     "require-dev": {
         "facade/ignition": "^1.4",
         "fzaninotto/faker": "^1.9",
         "laravel/ui": "^1.2",
         "mockery/mockery": "^1.4",
-        "mxl/laravel-job": "^1.1",
+        "mxl/laravel-jnpmob": "^1.1",
         "nunomaduro/collision": "^3.0",
         "nunomaduro/phpinsights": "^1.14",
         "phpunit/phpunit": "^9.2"
