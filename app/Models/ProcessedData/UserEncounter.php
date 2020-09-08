@@ -17,10 +17,10 @@ class UserEncounter extends Model
      * @var array
      */
     protected $fillable = [
-        'timestamp',
         'user_id1',
         'user_id2',
-        'time_diff'
+        'start_time',
+        'end_time'
     ];
 
     /**
@@ -29,6 +29,7 @@ class UserEncounter extends Model
      * @var array
      */
     protected $casts = [
-        'timestamp' => 'datetime',
+        'start_time' => 'datetime',
+        'end_time' => 'datetime'
     ];
 }

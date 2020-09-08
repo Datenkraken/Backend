@@ -3,24 +3,20 @@
 namespace App\Jobs;
 
 use App\Models\Datamining\BluetoothDeviceScan;
-use App\Models\Datamining\WifiData;
-use App\Models\JobLog;
 use App\Models\ProcessedData\UserEncounter;
-use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\DB;
+use MongoDB\BSON\UTCDateTime;
 
 class JobUserEncounterAnalyzer implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    const MAX_TIME_DIFF = 60 * 5; //5 minutes in UNIX Time
-    const JOB_ID = 1;
+    const MAX_TIME_DIFF = 30 * 5; //2.5 minutes in UNIX Time
+
     /**
      * Create a new job instance.
      *
@@ -28,36 +24,19 @@ class JobUserEncounterAnalyzer implements ShouldQueue
      */
     public function __construct()
     {
-        //
     }
-
-    /**
-     * Execute the job.
-     *        'timestamp',
-    'user_id1',
-    'user_id2',
-    'time_diff'
-     * @return void
-     */
+    
     public function handle()
     {
-        /*$start_time = 0;
-        $lastJob = JobLog::where('job_id', self::JOB_ID)->orderBy('timestamp', 'desc')->take(1)->get();
-        if (count($lastJob) != 0) {
-            $start_time = $lastJob[0]->timestamp->getTimestamp() - self::MAX_TIME_DIFF;
-        }*/
-
-        UserEncounter::truncate();
-
         $deviceScans = BluetoothDeviceScan::raw(function($collection) {
             return $collection->aggregate([
-                /*[
+                [
                     '$match' => [
                         'timestamp' => [
-                            '$lt' => Carbon::now()
+                            '$gte' => new UTCDateTime((time() - 24 * 60 * 60) * 1000)
                         ]
                     ]
-                ],*/
+                ],
                 [
                     '$sort' => [
                         'timestamp' => 1
@@ -76,30 +55,60 @@ class JobUserEncounterAnalyzer implements ShouldQueue
                 ]
             ]);
         });
+
+        if ($deviceScans == null || count($deviceScans) == 0) {
+            return;
+        }
+
         $userEncounters = [];
         foreach($deviceScans as $device) {
-            $max = count($device['user_ids']);
-            if ($max <= 1) continue;
-
-            $max = $max - 1;
+            $scans = $device['user_ids'];
+            $max = count($scans) - 1;
+            if ($max <= 0) continue;
             for ($i = 0; $i < $max; $i++) {
-                $max_time = $device['user_ids'][$i]['timestamp']->toDateTime()->getTimestamp() + self::MAX_TIME_DIFF;
-                for ($j = ($i + 1); $j < $max && $device['user_ids'][$j]['timestamp']->toDateTime()->getTimestamp() < $max_time; $j++) {
-                    if (strcmp($device['user_ids'][$i]['user_id'],$device['user_ids'][$j]['user_id']) != 0) {
-                        $userEncounters[] = ['timestamp' => $device['user_ids'][$i]['timestamp'],
-                                            'user_id1' => $device['user_ids'][$i]['user_id'],
-                                            'user_id2' => $device['user_ids'][$j]['user_id'],
-                                            'time_diff' => ($device['user_ids'][$j]['timestamp']->toDateTime()->getTimestamp()
-                                                - $device['user_ids'][$i]['timestamp']->toDateTime()->getTimestamp())];
+                $max_time = $scans[$i]['timestamp']->toDateTime()->getTimestamp() + self::MAX_TIME_DIFF;
+                $encounters = [];
+                for ($j = ($i + 1); $j < $max && $scans[$j]['timestamp']->toDateTime()->getTimestamp() < $max_time; $j++) {
+                    $identifier = $this->getIdentifier($scans[$i]['user_id'], $scans[$j]['user_id']);
+                    if ($identifier != null) {
+                        if (!in_array($identifier, $encounters)) {
+                            $encounters[$identifier] = $this->getUserEncounter(
+                                $scans[$i]['user_id'],
+                                $scans[$i]['timestamp']->toDateTime()->getTimestamp(),
+                                $scans[$j]['user_id'],
+                                $scans[$j]['timestamp']->toDateTime()->getTimestamp()
+                            );
+                        } else {
+                            $encounters[$identifier]['end_time'] = new UTCDateTime($scans[$j]['timestamp'] * 1000);
+                        }
                     }
                 }
+                $userEncounters = array_merge($userEncounters, array_values($encounters));
             }
         }
 
-        var_dump($userEncounters);
+        if (count($userEncounters) > 0) {
+            UserEncounter::insert(array_values($userEncounters));
+        }
+    }
 
-        UserEncounter::insert($userEncounters);
+    private function getIdentifier(String $userId1, String $userId2) {
+        $cmp = strcmp($userId1, $userId2);
+        if ($cmp > 0) {
+            return $userId2 . $userId1;
+        } elseif ($cmp < 0) {
+            return $userId1 . $userId2;
+        }
+        return null;
+    }
 
-        //JobLog::create(['job_id' => self::JOB_ID, 'timestamp' => time()]);
+    private function getUserEncounter(String $userId1, int $timestamp1, String $userId2, int $timestamp2) {
+        $users = [$userId1, $userId2];
+        sort($users);
+        $timestamps = [$timestamp1, $timestamp2]; //timestamp 1 will always be smaller than timestamp 2
+        return ['user_id1' => $users[0],
+            'user_id2' => $users[1],
+            'start_time' => new UTCDateTime($timestamps[0] * 1000),
+            'end_time' => new UTCDateTime($timestamps[1] * 1000)];
     }
 }
