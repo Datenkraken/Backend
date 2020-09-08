@@ -1,23 +1,29 @@
 <template>
-    <div class="h-full flex flex-col lg:flex-row">
-        <div class="h-full lg:w-3/4">
-            <div class="w-full goldenRationPad" id="map"></div>
-            <div class="w-full h-auto pt-12 pl-16 pr-16">
-                <vue-slider
-                    v-model="timeSelection.selected"
-                    :min="timeSelection.startTime"
-                    :max="timeSelection.endTime"
-                    :interval="timeSelection.stepSize"
-                    :tooltip-formatter="timeSelection.formatter">
-                </vue-slider>
-            </div>
+    <div class="flex-grow h-full">
+        <div v-show="loading" class="flex flex-col items-center justify-center flex-grow h-full">
+            <font-awesome-icon icon="circle-notch" size="3x" spin></font-awesome-icon>
         </div>
-        <div class="h-full lg:w-1/4">
-            <user-selection
-                :users="this.users"
-                action_string_identifier="map.show"
-                v-on:box-clicked="userToggled($event)"
-            ></user-selection>
+        <div v-show="!loading" class="h-full flex flex-col lg:flex-row">
+            <div class="h-full lg:w-3/4">
+                <div class="w-full goldenRationPad" id="map"></div>
+                <div class="w-full h-auto pt-12 pl-16 pr-16">
+                    <vue-slider
+                        v-model="timeSelection.selected"
+                        :min="timeSelection.startTime"
+                        :max="timeSelection.endTime"
+                        :interval="timeSelection.stepSize"
+                        :tooltip-formatter="timeSelection.formatter">
+                    </vue-slider>
+                </div>
+            </div>
+            <div class="h-full lg:w-1/4">
+                <user-selection
+                    :users="this.users"
+                    checkbox_column_identifier="map.show"
+                    user_column_identifier="users.id"
+                    v-on:box-clicked="userToggled($event)"
+                ></user-selection>
+            </div>
         </div>
     </div>
 </template>
@@ -41,6 +47,7 @@
         data() {
             return {
                 users: [],
+                loading: true,
                 timeSelection: {
                     selected: 0,
                     startTime: 0,
@@ -92,6 +99,7 @@
                 if (this.mutex) return;
                 this.mutex = true;
                 this.updateShownMarkers();
+                this.mutex = false;
             },
             async updateShownMarkers() {
                 this.markerLayer.clearLayers();
@@ -126,7 +134,6 @@
 
                     this.markerLayer.addLayer(m.marker);
                 }
-                this.mutex = false;
             },
 
             userToggled: function(event) {
@@ -139,6 +146,7 @@
                 this.users.push({
                     id: user,
                     value: index,
+                    label: user,
                     selected: false,
                 });
                 return index;
@@ -170,6 +178,13 @@
         watch: {
             allCoords: {
                 handler(coords) {
+                    if (coords === null) {
+                        return;
+                    } else if(coords.length === 0) {
+                        this.loading = false;
+                        return;
+                    }
+
                     this.timeSelection.endTime = coords[coords.length - 1].t
                         - (coords[coords.length - 1].t % this.timeSelection.stepSize)
                         + this.timeSelection.stepSize;
@@ -178,7 +193,7 @@
 
                     this.timeSelection.selected = this.timeSelection.startTime;
 
-                    this.timeLineMarkers = Array(this.timeToIndex(this.timeSelection.endTime) + 1).fill([]);
+                    this.edgesTimeline = Array.from(Array(this.timeToIndex(this.timeSelection.endTime) + 1),() => []);
 
                     let userIndex = 0;
                     for (let p of coords) {
@@ -190,6 +205,7 @@
 
                     }
                     this.queueMarkerUpdate();
+                    this.loading = false;
                 }
             },
             timeSelection: {

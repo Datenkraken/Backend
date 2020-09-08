@@ -1,57 +1,49 @@
 <template>
-    <div class="h-full flex flex-col lg:flex-row">
-        <div class="h-full lg:w-3/4">
-            <div class="w-full h-auto bg-bgsecondary">
-                <network
-                    :nodes="nodes"
-                    :edges="edges"
-                    :options="options">
-                </network>
-            </div>
-            <div class="w-full h-auto pt-8 pl-8 pr-8">
-                <div class="bg-gray-400">
-                    <vue-slider
-                        v-model="timeScale.selected"
-                        :min="timeScale.startTime"
-                        :max="timeScale.endTime"
-                        :interval="timeScale.stepSize"
-                        :tooltip-formatter="timeScale.formatter"
-                        :enable-cross="false"
-                        :dotSize="28"
-                        :height="8">
-                    </vue-slider>
+    <div class="flex-grow h-full">
+        <div v-show="loading" class="flex flex-col items-center justify-center flex-grow h-full">
+            <font-awesome-icon icon="circle-notch" size="3x" spin></font-awesome-icon>
+        </div>
+        <div v-show="!loading" class="h-full flex flex-col lg:flex-row">
+            <div class="h-full lg:w-3/4">
+                <div class="w-full h-auto bg-bgsecondary">
+                    <network
+                        :nodes="nodes"
+                        :edges="edges"
+                        :options="options">
+                    </network>
+                </div>
+                <div class="w-full h-auto pt-8 pl-8 pr-8">
+                    <div class="bg-gray-400">
+                        <vue-slider
+                            v-model="timeScale.selected"
+                            :min="timeScale.startTime"
+                            :max="timeScale.endTime"
+                            :interval="timeScale.stepSize"
+                            :tooltip-formatter="timeScale.formatter"
+                            :enable-cross="false"
+                            :dotSize="28"
+                            :height="8">
+                        </vue-slider>
+                    </div>
+                </div>
+                <div class="w-auto h-auto pt-8 pl-8 pb-16 pr-2">
+                    <label>
+                        <input @click="toggleMailLabels($event.target.checked)"
+                               class="form-checkbox"
+                               type="checkbox"
+                               name="select-box"/>
+                        {{$lang.get('bluetoothgraph.mail')}}
+                    </label>
                 </div>
             </div>
-        </div>
-        <div class="h-full lg:w-1/4">
-            <table>
-                <thead>
-                <tr>
-                    <th class="py-4 px-6 bg-gray-100 font-bold uppercase text-sm text-gray-900 border-b-2 border-gray-300">
-                        {{$lang.get('map.show')}}
-                    </th>
-                    <th class="py-4 px-6 bg-gray-100 font-bold uppercase text-sm text-gray-900 border-b-2 border-gray-300">
-                        {{$lang.get('map.user-id')}}
-                    </th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr
-                    v-for="user in users"
-                    :key="user"
-                    class="hover:bg-gray-200 border-b border-gray-300"
-                >
-                    <td class="py-4 px-6">
-                        <label>
-                            <input @click="boxChecked(user)" class="form-checkbox" type="checkbox" name="select-box" />
-                        </label>
-                    </td>
-                    <td class="py-4 px-6">
-                        {{ user }}
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+            <div class="h-full lg:w-1/4">
+                <user-selection
+                    :users="this.userSelection"
+                    checkbox_column_identifier="bluetoothgraph.show"
+                    :user_column_identifier="this.user_column_identifier"
+                    v-on:box-clicked="boxChecked($event)"
+                ></user-selection>
+            </div>
         </div>
     </div>
 </template>
@@ -68,12 +60,15 @@
         },
         data() {
             return {
-                nodes: [],
                 edges: [],
-                dev: [],
-                scans: [],
-                scan_matrix: [],
-                users: [],
+                nodes: [],
+                edgesTimeline: [],
+                userSelection: [],
+                mutex: false,
+                loading: true,
+                encounters_loaded: false,
+                users_loaded: false,
+                user_column_identifier: "users.id",
                 timeScale: {
                     selected: [0,0],
                     startTime: 0,
@@ -89,7 +84,7 @@
                         mass: 1,
                         borderWidth: 4,
                         size: 12,
-                        physics: true,
+                        physics: false,
                         font: {
                             color: "#f56565",
                         },
@@ -98,26 +93,31 @@
                         }
                     },
                     edges: {
-                        physics: false
+                        font: {
+                            color: "#ffffff",
+                            size: 20,
+                            strokeWidth: 0,
+                        },
+                        smooth: false,
+                        physics: false,
+                        value: 1,
                     }
                 }
             };
         },
 
         apollo: {
-            bluetoothDeviceScanned: gql`query{
-                bluetoothDeviceScanned {
-                    scans {
-                        t
-                        u
-                        d
-                        k
-                    }
-                    users
-                    devices {
-                        a
-                        n
-                    }
+            userEncounters: gql`query{
+                userEncounters {
+                    user1,
+                    user2,
+                    timestamp
+                }
+            }`,
+            users: gql`query{
+                users {
+                    id,
+                    email
                 }
             }`
         },
@@ -136,130 +136,177 @@
                 const pat = (hash & 0x00FFFFFF).toString(16).toUpperCase()
                 return "#000000".substring(0, 7 - pat.length) + pat;
             },
-
-            addTimeStampToMatrix(n1, n2, timestamp) {
-                if (n1 === n2) return;
-                let modifier = (n1 < n2);
-                if (!modifier) {
-                    let n3 = n1;
-                    n1 = n2;
-                    n2 = n3;
-                }
-                this.scan_matrix[n1][n2].push([timestamp, modifier]);
+            boxChecked(event) {
+                let index = this.nodes.findIndex(el => el.id === event.user.id);
+                this.nodes[index].hidden = !event.checked;
             },
-
-            computeMatrix() {
-                let devScans = [];
-                let debugCounter = 0;
-                for (let s of this.scans) {
-                    if (devScans.length < s.d || devScans[s.d] === null || devScans[s.d] === undefined) {
-                        devScans[s.d] = new Set([s.u]);
-                        debugCounter++;
-                    } else if (!devScans[s.d].has(s.u)) {
-                        devScans[s.d].add(s.u);
-                        debugCounter++;
+            addNodes(encounters) {
+                let users = new Map();
+                for (let enc of encounters) {
+                    if (!users.has(enc.user1)) {
+                        users.set(enc.user1, enc.user1);
+                        this.addUser(enc.user1);
+                    }
+                    if (!users.has(enc.user2)) {
+                        users.set(enc.user2, enc.user2);
+                        this.addUser(enc.user2);
                     }
                 }
-
-                for (let s of this.scans) {
-                    for (let n of devScans[s.d]) {
-                        this.addTimeStampToMatrix(s.u, n, s.t);
-                    }
-                }
-                this.scans = [];
+                return users;
             },
-
-            addToEdgesInInterval(n1, n2, startTime, endTime) {
-                let index = 0;
-                while (index < this.scan_matrix[n1][n2].length && this.scan_matrix[n1][n2][index][0] < startTime) {
-                    index++;
-                }
-                if (this.scan_matrix[n1][n2].length <= index
-                    || this.scan_matrix[n1][n2][index][0] < startTime
-                    || this.scan_matrix[n1][n2][index][0] > endTime) return;
-                let edgeValue = 1;
-                let modifier = null;
-                while (index < this.scan_matrix[n1][n2].length && this.
-                    scan_matrix[n1][n2][index][0] < endTime) {
-                    edgeValue += modifier !== this.scan_matrix[n1][n2][1] ? 1 : 0.25
-                    modifier = this.scan_matrix[n1][n2][1];
-                    index++;
-                }
-                this.edges.push({
-                    from: this.users[n1],
-                    to: this.users[n2],
-                    value: edgeValue,
-                    physics: false
+            addUser(userId) {
+                this.userSelection.push({
+                    id: userId,
+                    value: userId,
+                    label: userId,
+                    email: "",
+                    selected: false,
                 })
+                this.nodes.push({
+                    id: userId,
+                    label: userId,
+                    email: "",
+                    physics: false,
+                    hidden: true,
+                    color: {
+                        background: this.strToRGB(userId),
+                    },
+                });
             },
-
+            timeToIndex(time) {
+                return Math.round((time - this.timeScale.startTime) / this.timeScale.stepSize);
+            },
             computeEdgesInInterval(startTime, endTime) {
-                this.edges = [];
-                for (let i = 0; i < this.scan_matrix.length; i++) {
-                    for (let j = i + 1; j < this.scan_matrix.length; j++) {
-                        this.addToEdgesInInterval(i, j, startTime, endTime);
+                let edges = new Map();
+                let endIndex = this.timeToIndex(endTime);
+                let currentEdge = null;
+                for (let i = this.timeToIndex(startTime); i <= endIndex; i++) {
+                    for (let edge of this.edgesTimeline[i]) {
+                        if (edges.has(edge.from  + edge.to)) {
+                            currentEdge = edges.get(edge.from + edge.to);
+                            currentEdge.value += 1;
+                        } else {
+                            edges.set(edge.from + edge.to, {
+                                from: edge.from,
+                                to: edge.to,
+                                label: "",
+                                value: 1,
+                                physics: false
+                            })
+                        }
                     }
                 }
-            },
 
-            boxChecked(user) {
-                let index = this.nodes.findIndex(el => el.id === user);
-                this.nodes[index].physics = !this.nodes[index].physics;
-                this.nodes[index].hidden = !this.nodes[index].hidden;
+                this.edges = Array.from(edges.values());
+                let label = this.$lang.get('bluetoothgraph.encounter') + ": ";
+                for (let edge of this.edges) {
+                    edge.label = label + currentEdge.value;
+                }
+            },
+            queueGraphUpdate() {
+                if (this.mutex) return;
+                this.mutex = true;
+                this.computeEdgesInInterval(this.timeScale.selected[0], this.timeScale.selected[1]);
+                this.mutex = false;
+            },
+            addMailLabels(map) {
+                for (let n of this.nodes) {
+                    n.email = map.get(n.id);
+                }
+                for (let u of this.userSelection) {
+                    u.email = map.get(u.id);
+                }
+            },
+            toggleMailLabels(checked) {
+                if (checked) {
+                    for (let n of this.nodes) {
+                        n.label = n.email
+                    }
+                    for (let u of this.userSelection) {
+                        u.label = u.email;
+                    }
+                    this.user_column_identifier = "users.user-email"
+                } else {
+                    for (let n of this.nodes) {
+                        n.label = n.id
+                    }
+                    for (let u of this.userSelection) {
+                        u.label = u.id;
+                    }
+                    this.user_column_identifier = "users.id"
+                }
             }
         },
         functions: {
 
         },
         watch: {
-            bluetoothDeviceScanned: {
-                handler(transformedData) {
-                    if (transformedData === null) {
-                        return;
-                    }
-                    this.scan_matrix = [transformedData.users.length];
-                    for (let i = 0; i < transformedData.users.length; i++) {
-                        this.scan_matrix[i] = [transformedData.users.length];
-                        for (let j = 0; j < transformedData.users.length; j++) {
-                            this.scan_matrix[i][j] = [];
-                        }
-                    }
+            userEncounters: {
+              handler(encounters) {
+                  if (encounters === null || this.encounters_loaded) {
+                      return;
+                  } else if (encounters.length === 0) {
+                      this.loading = false;
+                      this.encounters_loaded = true;
+                      return;
+                  }
+                  let users = this.addNodes(encounters);
+                  this.timeScale.endTime = encounters[encounters.length - 1].timestamp
+                    - (encounters[encounters.length - 1].timestamp % this.timeScale.stepSize)
+                    + this.timeScale.stepSize;
+                  let startTime = encounters[0].timestamp - (encounters[0].timestamp % this.timeScale.stepSize);
+                  this.timeScale.selected = [startTime, startTime]
+                  this.timeScale.startTime = startTime;
 
-                    for (let u of transformedData.users) {
-                        this.nodes.push({
-                            id: u,
-                            label: u,
-                            physics: false,
-                            hidden: true,
-                            color: {
-                                background:  this.strToRGB(u),
-                            },
-                        })
-                    }
+                  let timeline = Array.from(Array(this.timeToIndex(this.timeScale.endTime) + 1),() => []);
 
-                    this.users = transformedData.users;
-                    this.scans = transformedData.scans;
+                  for (let i = 0; i < encounters.length; i++) {
+                      timeline[this.timeToIndex(encounters[i].timestamp)].push({
+                          from: users.get(encounters[i].user1),
+                          to: users.get(encounters[i].user2),
+                      })
+                      encounters[i] = null;
+                  }
+                  this.edgesTimeline = timeline;
+                  if (this.users_loaded) {
+                      let map = new Map();
+                      for (let user of this.users) {
+                          if (!map.has(user.id)) {
+                              map.set(user.id, user.email);
+                          }
+                      }
 
-                    this.timeScale.endTime = transformedData.scans[transformedData.scans.length - 1].t
-                        - (transformedData.scans[transformedData.scans.length - 1].t % this.timeScale.stepSize)
-                        + this.timeScale.stepSize;
+                      this.addMailLabels(map);
+                      this.loading = false;
+                  }
 
-                    this.timeScale.selected[1] = this.timeScale.endTime;
-                    this.timeScale.selected[0] = this.timeScale.startTime;
-
-                    this.timeScale.startTime = transformedData.scans[0].t - (transformedData.scans[0].t % this.timeScale.stepSize);
-
-                    this.computeMatrix();
-                    this.computeEdgesInInterval(this.timeScale.selected[0], this.timeScale.selected[1]);
-                    transformedData.scans = [];
-                    transformedData.users = [];
-                    transformedData.devices = [];
-                }
+                  this.edgesTimeline[this.edgesTimeline.length -1] = [];
+                  this.encounters_loaded = true;
+                  this.userEncounters = null;
+              }
             },
             timeScale: {
                 deep: true,
                 handler() {
-                    this.computeEdgesInInterval(this.timeScale.selected[0], this.timeScale.selected[1]);
+                    this.queueGraphUpdate();
+                }
+            },
+            users: {
+                handler(newUsers) {
+                    if (newUsers == null || this.users_loaded || !this.encounters_loaded) {
+                        return;
+                    }
+
+                    let map = new Map();
+                    for (let user of newUsers) {
+                        if (!map.has(user.id)) {
+                            map.set(user.id, user.email);
+                        }
+                    }
+
+                    this.addMailLabels(map);
+                    this.loading = false;
+                    this.users_loaded = true;
                 }
             }
         }
@@ -269,7 +316,4 @@
 
 <style scoped>
     @import '~vue-slider-component/theme/antd.css';
-    div.vis-network {
-        background-color: red;
-    }
 </style>

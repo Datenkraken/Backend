@@ -16,4 +16,5 @@ return [
     "ask-promote-admin" => "Do you really want to promote the user to an admin?",
     "ask-remove-admin" => "Do you really want to remove the user from the admin role?",
     "unselect" => "Unselect all",
+    "user-email" => "User email",
 ];

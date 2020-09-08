@@ -21,13 +21,23 @@ type UserCounts {
   all: [DateValue]
 }
 
+type User {
+    id: String,
+    is_admin: Boolean,
+    email: String,
+    updated_at: Date,
+    created_at: Date,
+    email_verified_at: Date
+}
+
 type Mutation
 
 type Query {
-  """
-  Query to get the user count for a given time period, ordered by date
-  """
-  userCount(startDate: Date, endDate: Date): UserCounts @isAdmin
+    """
+    Query to get the user count for a given time period, ordered by date
+    """
+    userCount(startDate: Date, endDate: Date): UserCounts @isAdmin
+    users: [User] @isAdmin @all
 }
 
 #import AppEvent.graphql
@@ -42,3 +52,4 @@ type Query {
 #import BluetoothDeviceScan.graphql
 #import BluetoothBondDevice.graphql
 #import PermissionState.graphql
+#import UserEncounter.graphql

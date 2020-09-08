@@ -34,7 +34,7 @@ $factory->define(BluetoothDeviceScan::class, function (Faker $faker) {
     $device = $faker->randomElement($devices);
 
     return [
-        'timestamp' => $faker->dateTimeBetween('-1 day', 'now'),
+        'timestamp' => $faker->dateTimeBetween('-14 day', 'now'),
         'user_id' => $user->id,
         'address' => $device,
         'name' => $faker->name . '\'s mobile phone',
