@@ -16,4 +16,5 @@ return [
     "ask-promote-admin" => "Wirklich den ausgewählten Nutzer zum Admin ernennen?",
     "ask-remove-admin" => "Wirklich den ausgewählten Nutzer von den Admins entfernen?",
     "unselect" => "Alle abwählen",
+    "user-email" => "Nutzer Email",
 ];

@@ -29,6 +29,7 @@ Route::namespace('Dashboard')->group(function () {
 
     Route::get('/home', 'HomeController@index')->name('home');
     Route::get('/maps', 'MapsController@index')->name('maps');
+    Route::get('/bluetooth', 'BluetoothMapController@index')->name('bluetooth');
     Route::get('/manage-oauth', 'ManageOAuthController@index')->name('manage-oauth');
     Route::get('/users', 'UserController@index')->name('users');
     Route::get('/sources', 'SourceController@index')->name('sources');

@@ -23,20 +23,23 @@ import {
     RetentionSettings,
     ConfirmModal,
     UserSelection,
-    UserMap
+    UserMap,
+    BluetoothNetwork,
+    FontAwesomeIconWrapper
 } from './components';
 import { AuthorizedClients, Clients, PersonalAccessTokens } from './components/passport';
 import { LineChart, UserCountChart, AppOpenedChart } from './components/charts';
 
-import { library as falibrary } from '@fortawesome/fontawesome-svg-core';
-import { faCogs, faSignOutAlt, faKey, faEdit, faTrash, faCalendar, faTimes, faCircle, faCircleNotch, faUserShield, faHome, faUsers, faFolderOpen, faFileAlt, faIdCard, faSignInAlt, faHourglassEnd, faMapMarkerAlt} from '@fortawesome/free-solid-svg-icons';
+import { library as falibrary} from '@fortawesome/fontawesome-svg-core';
+import { faBluetoothB } from '@fortawesome/free-brands-svg-icons';
+import { faCogs, faSignOutAlt, faKey, faEdit, faTrash, faCalendar, faTimes, faCircle, faCircleNotch, faUserShield, faHome, faUsers, faFolderOpen, faFileAlt, faIdCard, faSignInAlt, faHourglassEnd, faMapMarkerAlt, faQuestion} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 import CKEditor from '@ckeditor/ckeditor5-vue';
 import Notifications from 'vue-notification';
 import VueFlatPickr from 'vue-flatpickr-component';
 import 'flatpickr/dist/flatpickr.css';
-
+import "vue-vis-network/dist/vueVisNetwork.css";
 import Lang from 'lang.js';
 import VueFlags from "@growthbunker/vueflags";
 
@@ -45,8 +48,10 @@ import VueApollo from 'vue-apollo';
 
 import 'leaflet/dist/leaflet.css';
 import 'vue-slider-component/theme/antd.css';
+import '@fortawesome/fontawesome-svg-core/styles.css'
 
-falibrary.add(faCogs, faSignOutAlt, faKey, faEdit, faTrash, faCalendar, faTimes, faCircle, faCircleNotch, faUserShield, faHome, faUsers, faFolderOpen, faFileAlt, faIdCard, faSignInAlt, faHourglassEnd, faMapMarkerAlt);
+falibrary.add(faCogs, faSignOutAlt, faKey, faEdit, faTrash, faCalendar, faTimes, faCircle, faCircleNotch, faUserShield, faHome, faUsers, faFolderOpen, faFileAlt, faIdCard, faSignInAlt, faHourglassEnd, faMapMarkerAlt, faQuestion);
+falibrary.add(faBluetoothB);
 
 const apolloProvider = new VueApollo({
   defaultClient: new ApolloClient({
@@ -84,6 +89,7 @@ Vue.prototype.$lang = new Lang( { messages, locale: default_locale, fallback: fa
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default))
 
 Vue.component('font-awesome-icon', FontAwesomeIcon);
+Vue.component('font-awesome-icon-wrapper', FontAwesomeIconWrapper);
 
 Vue.component('dk-users', Users);
 Vue.component('dk-sources', Sources);
@@ -107,8 +113,10 @@ Vue.component('dk-chart-container', ChartContainer);
 Vue.component('dk-line-chart', LineChart);
 Vue.component('dk-user-count-chart', UserCountChart);
 Vue.component('dk-app-opened-chart', AppOpenedChart);
+
+Vue.component('user-selection', UserSelection);
 Vue.component('dk-user-map', UserMap);
-Vue.component('dk-user-selection', UserSelection);
+Vue.component('dk-bluetooth-network', BluetoothNetwork);
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to

@@ -3,6 +3,7 @@
 return [
     "home" => "Home",
     "maps" => "Karte",
+    "bluetooth" => "Bluetooth Karte",
     "users" => "Nutzer",
     "sources" => "Quellen",
     "privacy-policy" => "Datenschutzerklärung",

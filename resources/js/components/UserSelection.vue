@@ -4,10 +4,10 @@
             <thead>
             <tr>
                 <th class="py-4 px-6 bg-gray-100 font-bold uppercase text-sm text-gray-900 border-b-2 border-gray-300">
-                    {{$lang.get(action_string_identifier)}}
+                    {{$lang.get(checkbox_column_identifier)}}
                 </th>
                 <th class="py-4 px-6 bg-gray-100 font-bold uppercase text-sm text-gray-900 border-b-2 border-gray-300">
-                    {{$lang.get('user.id')}}
+                    {{$lang.get(user_column_identifier)}}
                 </th>
             </tr>
             </thead>
@@ -29,7 +29,7 @@
                     </label>
                 </td>
                 <td class="py-4 px-6">
-                    {{ user.id }}
+                    {{ user.label }}
                 </td>
             </tr>
             </tbody>
@@ -42,7 +42,8 @@
         name: "UserSelection",
 
         props: {
-            action_string_identifier: String,
+            checkbox_column_identifier: String,
+            user_column_identifier: String,
             users: Array,
         },
         data() {

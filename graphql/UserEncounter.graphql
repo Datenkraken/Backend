@@ -1,0 +1,10 @@
+type Encounter {
+    user1: String!,
+    user2: String!,
+    timestamp: Int!
+
+}
+
+extend type Query {
+    userEncounters: [Encounter] @isAdmin
+}

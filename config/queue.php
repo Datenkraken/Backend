@@ -35,10 +35,11 @@ return [
         ],
 
         'database' => [
-            'driver' => 'database',
+            'driver' => 'mongodb',
+            'connection' => 'mongodb-job',
             'table' => 'jobs',
             'queue' => 'default',
-            'retry_after' => 90,
+            'expire' => 60,
         ],
 
         'beanstalkd' => [
@@ -80,8 +81,8 @@ return [
     */
 
     'failed' => [
-        'driver' => env('QUEUE_FAILED_DRIVER', 'database'),
-        'database' => env('DB_CONNECTION', 'mysql'),
+        'driver' => 'drive',
+        'database' => 'mongodb-job',
         'table' => 'failed_jobs',
     ],
 

@@ -4,6 +4,7 @@ namespace App\Console;
 
 use App\Console\Commands\AddUser;
 use App\Console\Commands\RemoveUserData;
+use App\Jobs\JobUserEncounterAnalyzer;
 use App\Models\RetentionPolicy;
 use App\Repositories\RetentionPolicyRepository;
 use Illuminate\Console\Scheduling\Schedule;
@@ -48,6 +49,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('userdata:remove --expired')
             ->everyMinute()
             ->when($retentionPolicyRepository->canDefaultRetentionBeScheduled());
+
+        $schedule->job(new JobUserEncounterAnalyzer())->dailyAt('07:00');
     }
 
     /**
