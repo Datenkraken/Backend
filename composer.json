@@ -24,7 +24,6 @@
         "laravel/passport": "^9.3",
         "laravel/tinker": "^2.4",
         "nuwave/lighthouse": "^4.16",
-        "php-ds/php-ds": "^1.2",
         "spatie/laravel-cors": "^1.6",
         "spatie/laravel-csp": "^2.5"
     },
