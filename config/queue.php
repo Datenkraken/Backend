@@ -81,7 +81,7 @@ return [
     */
 
     'failed' => [
-        'driver' => 'drive',
+        'driver' => 'mongodb',
         'database' => 'mongodb-job',
         'table' => 'failed_jobs',
     ],

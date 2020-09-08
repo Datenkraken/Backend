@@ -5,6 +5,8 @@ FROM thecodingmachine/php:7.3-v3-apache-node10 AS builder
 
 COPY --chown=docker:docker . .
 
+ENV PHP_EXTENSION_MONGODB=1
+
 RUN composer install --quiet --optimize-autoloader --no-interaction --ignore-platform-reqs && \
     npm set progress=false && \
     npm config set depth 0 && \
