@@ -36,7 +36,7 @@ return [
 
         'database' => [
             'driver' => 'mongodb',
-            'connection' => 'mongodb-job',
+            'connection' => 'mongodb',
             'table' => 'jobs',
             'queue' => 'default',
             'expire' => 60,
@@ -82,7 +82,7 @@ return [
 
     'failed' => [
         'driver' => 'mongodb',
-        'database' => 'mongodb-job',
+        'database' => 'mongodb',
         'table' => 'failed_jobs',
     ],
 
