@@ -53,3 +53,4 @@ type Query {
 #import BluetoothBondDevice.graphql
 #import PermissionState.graphql
 #import UserEncounter.graphql
+#import Log.graphql
