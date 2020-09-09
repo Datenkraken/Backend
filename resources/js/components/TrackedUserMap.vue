@@ -193,7 +193,7 @@
 
                     this.timeSelection.selected = this.timeSelection.startTime;
 
-                    this.edgesTimeline = Array.from(Array(this.timeToIndex(this.timeSelection.endTime) + 1),() => []);
+                    this.timeLineMarkers = Array.from(Array(this.timeToIndex(this.timeSelection.endTime) + 1),() => []);
 
                     let userIndex = 0;
                     for (let p of coords) {
