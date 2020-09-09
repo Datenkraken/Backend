@@ -200,7 +200,7 @@
                 this.edges = Array.from(edges.values());
                 let label = this.$lang.get('bluetoothgraph.encounter') + ": ";
                 for (let edge of this.edges) {
-                    edge.label = label + currentEdge.value;
+                    edge.label = label + edge.value;
                 }
             },
             queueGraphUpdate() {
