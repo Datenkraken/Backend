@@ -1,6 +1,6 @@
 <div class="relative top-0 flex flex-row flex-wrap bg-bgprimary px-6 py-2 text-gray-100 items-center">
     <div class="text-3xl flex-grow text-primary">
-        <a href="{{ route('home') }}">{{ config('app.name', 'Datenkraken') }}</a>
+        <a href="{{ route('home') }}">{{ config('app.name', 'Data Literacy') }}</a>
     </div>
 
     <div class="flex items-center ml-auto">
