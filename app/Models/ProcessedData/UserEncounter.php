@@ -2,7 +2,9 @@
 
 namespace App\Models\ProcessedData;
 
+use App\Models\User;
 use Jenssegers\Mongodb\Eloquent\Model;
+use Jenssegers\Mongodb\Relations\BelongsToMany;
 
 /**
  * Model class for app events. The type attribute can have
@@ -17,8 +19,6 @@ class UserEncounter extends Model
      * @var array
      */
     protected $fillable = [
-        'user_id1',
-        'user_id2',
         'start_time',
         'end_time'
     ];
@@ -29,7 +29,11 @@ class UserEncounter extends Model
      * @var array
      */
     protected $casts = [
-        'start_time' => 'datetime',
-        'end_time' => 'datetime'
+        'start_time' => 'timestamp',
+        'end_time' => 'timestamp'
     ];
+
+    public function participants() {
+        return $this->belongsToMany(User::class, null, 'encounters', 'participants');
+    }
 }

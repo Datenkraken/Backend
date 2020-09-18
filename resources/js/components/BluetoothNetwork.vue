@@ -108,10 +108,12 @@
 
         apollo: {
             userEncounters: gql`query{
-                userEncounters {
-                    user1,
-                    user2,
-                    timestamp
+                userEncounters(orderBy: [{field: END_TIME, order: ASC }]) {
+                    start_time,
+                    end_time,
+                    participants {
+                        id,
+                    },
                 }
             }`,
             users: gql`query{
@@ -139,29 +141,33 @@
             boxChecked(event) {
                 let index = this.nodes.findIndex(el => el.id === event.user.id);
                 this.nodes[index].hidden = !event.checked;
+                event.user.selected = event.checked;
+                if(event.checked) {
+                    this.queueGraphUpdate();
+                }
             },
             addNodes(encounters) {
                 let users = new Map();
+                let selection = null;
                 for (let enc of encounters) {
-                    if (!users.has(enc.user1)) {
-                        users.set(enc.user1, enc.user1);
-                        this.addUser(enc.user1);
-                    }
-                    if (!users.has(enc.user2)) {
-                        users.set(enc.user2, enc.user2);
-                        this.addUser(enc.user2);
+                    for (let user of enc.participants) {
+                        if (!users.has(user.id)) {
+                            selection = this.addUser(user.id);
+                            users.set(user.id, selection);
+                        }
                     }
                 }
                 return users;
             },
             addUser(userId) {
-                this.userSelection.push({
+                let user = {
                     id: userId,
                     value: userId,
                     label: userId,
                     email: "",
                     selected: false,
-                })
+                };
+                this.userSelection.push(user)
                 this.nodes.push({
                     id: userId,
                     label: userId,
@@ -172,23 +178,27 @@
                         background: this.strToRGB(userId),
                     },
                 });
+                return user;
             },
             timeToIndex(time) {
                 return Math.round((time - this.timeScale.startTime) / this.timeScale.stepSize);
             },
-            computeEdgesInInterval(startTime, endTime) {
+            async computeEdgesInInterval() {
                 let edges = new Map();
-                let endIndex = this.timeToIndex(endTime);
+                let endIndex = this.timeToIndex(this.timeScale.selected[1]);
                 let currentEdge = null;
-                for (let i = this.timeToIndex(startTime); i <= endIndex; i++) {
+                for (let i = this.timeToIndex(this.timeScale.selected[0]); i <= endIndex; i++) {
                     for (let edge of this.edgesTimeline[i]) {
-                        if (edges.has(edge.from  + edge.to)) {
-                            currentEdge = edges.get(edge.from + edge.to);
+                        if (!edge.from.selected || !edge.to.selected) {
+                            continue;
+                        }
+                        if (edges.has(edge.from.id  + edge.to.id)) {
+                            currentEdge = edges.get(edge.from.id + edge.to.id);
                             currentEdge.value += 1;
                         } else {
-                            edges.set(edge.from + edge.to, {
-                                from: edge.from,
-                                to: edge.to,
+                            edges.set(edge.from.id + edge.to.id, {
+                                from: edge.from.id,
+                                to: edge.to.id,
                                 label: "",
                                 value: 1,
                                 physics: false
@@ -205,9 +215,11 @@
             },
             queueGraphUpdate() {
                 if (this.mutex) return;
+
                 this.mutex = true;
-                this.computeEdgesInInterval(this.timeScale.selected[0], this.timeScale.selected[1]);
-                this.mutex = false;
+                this.computeEdgesInInterval().then(() => {
+                    this.mutex = false;
+                });
             },
             addMailLabels(map) {
                 for (let n of this.nodes) {
@@ -250,37 +262,38 @@
                       this.encounters_loaded = true;
                       return;
                   }
+
                   let users = this.addNodes(encounters);
-                  this.timeScale.endTime = encounters[encounters.length - 1].timestamp
-                    - (encounters[encounters.length - 1].timestamp % this.timeScale.stepSize)
+
+                  this.timeScale.endTime = encounters[encounters.length - 1].end_time
+                    - (encounters[encounters.length - 1].end_time % this.timeScale.stepSize)
                     + this.timeScale.stepSize;
-                  let startTime = encounters[0].timestamp - (encounters[0].timestamp % this.timeScale.stepSize);
+                  let startTime = encounters[0].start_time - (encounters[0].start_time % this.timeScale.stepSize);
                   this.timeScale.selected = [startTime, startTime]
                   this.timeScale.startTime = startTime;
 
                   let timeline = Array.from(Array(this.timeToIndex(this.timeScale.endTime) + 1),() => []);
 
                   for (let i = 0; i < encounters.length; i++) {
-                      timeline[this.timeToIndex(encounters[i].timestamp)].push({
-                          from: users.get(encounters[i].user1),
-                          to: users.get(encounters[i].user2),
+                      timeline[this.timeToIndex(Math.round((encounters[i].start_time + encounters[i].end_time) / 2))].push({
+                          from: users.get(encounters[i].participants[0].id),
+                          to: users.get(encounters[i].participants[1].id),
                       })
                       encounters[i] = null;
                   }
+
                   this.edgesTimeline = timeline;
                   if (this.users_loaded) {
                       let map = new Map();
                       for (let user of this.users) {
-                          if (!map.has(user.id)) {
-                              map.set(user.id, user.email);
-                          }
+                          map.set(user.id, user.email);
                       }
 
                       this.addMailLabels(map);
                       this.loading = false;
+                      this.users = null;
                   }
 
-                  this.edgesTimeline[this.edgesTimeline.length -1] = [];
                   this.encounters_loaded = true;
                   this.userEncounters = null;
               }
@@ -299,14 +312,13 @@
 
                     let map = new Map();
                     for (let user of newUsers) {
-                        if (!map.has(user.id)) {
-                            map.set(user.id, user.email);
-                        }
+                        map.set(user.id, user.email);
                     }
 
                     this.addMailLabels(map);
                     this.loading = false;
                     this.users_loaded = true;
+                    this.users = null;
                 }
             }
         }

@@ -29,15 +29,17 @@ $factory->define(BluetoothDeviceScan::class, function (Faker $faker) {
         '00:00:00:00:00:20',
     );
 
-    $users = App\Models\User::all();
-    $user = $faker->randomElement($users);
     $device = $faker->randomElement($devices);
-
     return [
         'timestamp' => $faker->dateTimeBetween('-14 day', 'now'),
-        'user_id' => $user->id,
-        'address' => $device,
         'name' => $faker->name . '\'s mobile phone',
+        'address' => $device,
         'known' => false,
     ];
+});
+
+$factory->afterCreating(BluetoothDeviceScan::class, function ($scan, $faker) {
+    $user = App\Models\User::where('is_admin', false)->get()->random();
+    $user->dataBluetoothScans()->save($scan);
+    $user->save();
 });

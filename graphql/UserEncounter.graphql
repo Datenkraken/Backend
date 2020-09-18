@@ -1,10 +1,9 @@
-type Encounter {
-    user1: String!,
-    user2: String!,
-    timestamp: Int!
-
+type UserEncounter {
+    start_time: Int,
+    end_time: Int,
+    participants: [User],
 }
 
 extend type Query {
-    userEncounters: [Encounter] @isAdmin
+    userEncounters(orderBy: _ @orderBy(columns: ["end_time"])): [UserEncounter] @isAdmin @all(model: "\\App\\Models\\ProcessedData\\UserEncounter")
 }

@@ -13,13 +13,12 @@ class UserEncounters
     {
         $encounters = UserEncounter::get();
         $result = [];
-
         foreach ($encounters as $encounter) {
+            $participants = $encounter->participants();
             $result[] = [
-                            'user1' => $encounter->user_id1,
-                            'user2' => $encounter->user_id2,
-                            'timestamp' => ($encounter->start_time->getTimestamp()
-                                + $encounter->start_time->getTimestamp()) / 2,
+                            'user1' => $participants[0],
+                            'user2' => $participants[1],
+                            'timestamp' => floor(( $encounter->start_time->getTimestamp() + $encounter->end_time->getTimestamp()) / 2),
                         ];
         }
         usort($result, [$this, 'cmp']);

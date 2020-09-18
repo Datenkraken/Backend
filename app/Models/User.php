@@ -12,6 +12,7 @@ use App\Models\Datamining\PermissionState;
 use App\Models\Datamining\SourceEvent;
 use App\Models\Datamining\UserActivity;
 use App\Models\Datamining\WifiData;
+use App\Models\ProcessedData\UserEncounter;
 use DesignMyNight\Mongodb\Auth\User as Authenticatable;
 use Illuminate\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -131,5 +132,9 @@ class User extends Authenticatable
     public function logEntries()
     {
         return $this->hasMany(LogEntry::class);
+    }
+
+    public function dataEncounters() {
+        return $this->belongsToMany(UserEncounter::class, null, 'participants', 'encounters');
     }
 }
