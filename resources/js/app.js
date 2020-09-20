@@ -33,7 +33,7 @@ import { LineChart, UserCountChart, AppOpenedChart } from './components/charts';
 
 import { library as falibrary} from '@fortawesome/fontawesome-svg-core';
 import { faBluetoothB } from '@fortawesome/free-brands-svg-icons';
-import { faCogs, faSignOutAlt, faKey, faEdit, faTrash, faCalendar, faTimes, faCircle, faCircleNotch, faUserShield, faHome, faUsers, faFolderOpen, faFileAlt, faIdCard, faSignInAlt, faHourglassEnd, faMapMarkerAlt, faQuestion} from '@fortawesome/free-solid-svg-icons';
+import { faCogs, faSignOutAlt, faKey, faEdit, faTrash, faCalendar, faTimes, faCircle, faCircleNotch, faUserShield, faHome, faUsers, faFolderOpen, faFileAlt, faIdCard, faSignInAlt, faHourglassEnd, faMapMarkerAlt, faQuestion, faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 import CKEditor from '@ckeditor/ckeditor5-vue';
@@ -51,7 +51,7 @@ import 'leaflet/dist/leaflet.css';
 import 'vue-slider-component/theme/antd.css';
 import '@fortawesome/fontawesome-svg-core/styles.css'
 
-falibrary.add(faCogs, faSignOutAlt, faKey, faEdit, faTrash, faCalendar, faTimes, faCircle, faCircleNotch, faUserShield, faHome, faUsers, faFolderOpen, faFileAlt, faIdCard, faSignInAlt, faHourglassEnd, faMapMarkerAlt, faQuestion);
+falibrary.add(faCogs, faSignOutAlt, faKey, faEdit, faTrash, faCalendar, faTimes, faCircle, faCircleNotch, faUserShield, faHome, faUsers, faFolderOpen, faFileAlt, faIdCard, faSignInAlt, faHourglassEnd, faMapMarkerAlt, faQuestion, faInfoCircle);
 falibrary.add(faBluetoothB);
 
 const apolloProvider = new VueApollo({

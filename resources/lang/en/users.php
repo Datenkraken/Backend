@@ -17,4 +17,5 @@ return [
     "ask-remove-admin" => "Do you really want to remove the user from the admin role?",
     "unselect" => "Unselect all",
     "user-email" => "User email",
+    "user-info" => "Info"
 ];

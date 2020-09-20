@@ -44,6 +44,14 @@
                 </td>
                 <td class="py-4 px-6">{{ formatDate(user.created_at) }}</td>
                 <td class="py-4 px-6 flex">
+                    <td class="py-4 px-6">
+                    <button-link
+                        color="blue-600"
+                        hover-color="blue-600"
+                        :url="'/user/' + user._id"
+                    >
+                        <font-awesome-icon icon="info-circle"></font-awesome-icon>
+                    </button-link>
                     <dk-button
                         @click="deleteUsers([user._id])"
                         :padding="false"

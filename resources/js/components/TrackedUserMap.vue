@@ -16,7 +16,7 @@
                     </vue-slider>
                 </div>
             </div>
-            <div class="h-full lg:w-1/4">
+            <div class="h-full lg:w-1/3">
                 <user-selection
                     :users="this.users"
                     checkbox_column_identifier="map.show"

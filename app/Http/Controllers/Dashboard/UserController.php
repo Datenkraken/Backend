@@ -69,4 +69,9 @@ class UserController extends Controller
         $instance->is_admin = $data['is_admin'];
         $instance->save();
     }
+
+    public function user($id)
+    {
+        return view('user')->with('user', $id);
+    }
 }

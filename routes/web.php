@@ -32,6 +32,7 @@ Route::namespace('Dashboard')->group(function () {
     Route::get('/bluetooth', 'BluetoothMapController@index')->name('bluetooth');
     Route::get('/manage-oauth', 'ManageOAuthController@index')->name('manage-oauth');
     Route::get('/users', 'UserController@index')->name('users');
+    Route::get('/user/{id}', 'UserController@user')->name('user');
     Route::get('/sources', 'SourceController@index')->name('sources');
     Route::get('/account/password', 'Auth\UpdatePasswordController@index')
         ->name('account.password');

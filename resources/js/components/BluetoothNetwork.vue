@@ -4,7 +4,7 @@
             <font-awesome-icon icon="circle-notch" size="3x" spin></font-awesome-icon>
         </div>
         <div v-show="!loading" class="h-full flex flex-col lg:flex-row">
-            <div class="h-full lg:w-3/4">
+            <div class="h-full w-full">
                 <div class="w-full h-auto bg-bgsecondary">
                     <network
                         :nodes="nodes"
@@ -36,7 +36,7 @@
                     </label>
                 </div>
             </div>
-            <div class="h-full lg:w-1/4">
+            <div class="h-full lg:w-1/3">
                 <user-selection
                     :users="this.userSelection"
                     checkbox_column_identifier="bluetoothgraph.show"

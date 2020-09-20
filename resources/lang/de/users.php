@@ -17,4 +17,5 @@ return [
     "ask-remove-admin" => "Wirklich den ausgewählten Nutzer von den Admins entfernen?",
     "unselect" => "Alle abwählen",
     "user-email" => "Nutzer Email",
+    "user-info" => "Info"
 ];
