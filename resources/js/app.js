@@ -25,7 +25,8 @@ import {
     UserSelection,
     UserMap,
     BluetoothNetwork,
-    FontAwesomeIconWrapper
+    FontAwesomeIconWrapper,
+    ButtonLink
 } from './components';
 import { AuthorizedClients, Clients, PersonalAccessTokens } from './components/passport';
 import { LineChart, UserCountChart, AppOpenedChart } from './components/charts';
@@ -117,6 +118,7 @@ Vue.component('dk-app-opened-chart', AppOpenedChart);
 Vue.component('user-selection', UserSelection);
 Vue.component('dk-user-map', UserMap);
 Vue.component('dk-bluetooth-network', BluetoothNetwork);
+Vue.component('button-link', ButtonLink);
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to
